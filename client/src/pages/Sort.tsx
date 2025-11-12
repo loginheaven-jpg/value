@@ -61,6 +61,10 @@ export default function Sort() {
   const config = STEP_CONFIGS[currentStep - 1];
   const canProceed = selectedIds.size === config.to;
 
+  // 선택된 카드와 미선택 카드 분리
+  const selectedValues = availableValues.filter((v) => selectedIds.has(v.id));
+  const unselectedValues = availableValues.filter((v) => !selectedIds.has(v.id));
+
   const handleCardClick = (id: number) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) {
@@ -101,7 +105,6 @@ export default function Sort() {
     if (currentStep === 1) {
       setLocation("/");
     } else {
-      // 이전 단계로 (구현 복잡도로 인해 처음부터 다시 시작 권장)
       toast.info("처음부터 다시 시작하시겠습니까?");
     }
   };
@@ -119,44 +122,94 @@ export default function Sort() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
-        <div className="container py-4">
+      {/* Sticky 헤더 */}
+      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b shadow-sm">
+        <div className="container py-4 space-y-4">
           <ProgressBar currentStep={currentStep} />
+          
+          {/* 단계 안내 */}
+          <div className="text-center space-y-2">
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">
+              {config.title}
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              {config.instruction}
+            </p>
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <span className="text-foreground font-medium">
+                선택됨: <span className="text-primary text-lg font-bold">{selectedIds.size}</span> / {config.to}
+              </span>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* 메인 컨텐츠 */}
-      <main className="container py-8">
-        {/* 단계 안내 */}
-        <div className="max-w-3xl mx-auto mb-8 text-center space-y-2">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-            {config.title}
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            {config.instruction}
-          </p>
-          <div className="flex items-center justify-center gap-4 text-sm">
-            <span className="text-foreground font-medium">
-              선택됨: <span className="text-primary text-lg font-bold">{selectedIds.size}</span> / {config.to}
-            </span>
+      <main className="container py-6">
+        {/* 선택된 카드 영역 */}
+        {selectedValues.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-primary">
+                ✓ 선택한 가치 ({selectedValues.length}개)
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                카드를 다시 클릭하면 선택 해제됩니다
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
+              {selectedValues.map((value) => (
+                <ValueCard
+                  key={value.id}
+                  value={value}
+                  isSelected={true}
+                  onClick={() => handleCardClick(value.id)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* 가치 카드 그리드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-          {availableValues.map((value) => (
-            <ValueCard
-              key={value.id}
-              value={value}
-              isSelected={selectedIds.has(value.id)}
-              onClick={() => handleCardClick(value.id)}
-            />
-          ))}
-        </div>
+        {/* 미선택 카드 영역 */}
+        {unselectedValues.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-foreground">
+                선택 가능한 가치 ({unselectedValues.length}개)
+              </h3>
+              {selectedIds.size < config.to && (
+                <p className="text-sm text-accent-foreground bg-accent/20 px-3 py-1 rounded-full">
+                  {config.to - selectedIds.size}개 더 선택하세요
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {unselectedValues.map((value) => (
+                <ValueCard
+                  key={value.id}
+                  value={value}
+                  isSelected={false}
+                  onClick={() => handleCardClick(value.id)}
+                  disabled={selectedIds.size >= config.to}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 모두 선택한 경우 안내 */}
+        {unselectedValues.length === 0 && selectedValues.length > 0 && (
+          <div className="text-center py-8">
+            <div className="inline-block px-6 py-3 bg-primary/10 rounded-lg">
+              <p className="text-primary font-semibold">
+                ✓ 모든 카드를 선택했습니다! 다음 단계로 진행하세요.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* 네비게이션 버튼 */}
-        <div className="max-w-3xl mx-auto flex justify-between items-center">
+        <div className="max-w-3xl mx-auto flex justify-between items-center mt-8 pt-6 border-t">
           <Button
             variant="outline"
             onClick={handleBack}
