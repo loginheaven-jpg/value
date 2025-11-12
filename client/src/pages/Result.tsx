@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Value } from "@/types/values";
-import { Download, Home, RotateCcw, Share2 } from "lucide-react";
+import { Download, Home, RotateCcw, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ export default function Result() {
   const handleDownloadPDF = async () => {
     try {
       setIsGeneratingPDF(true);
-      toast.info("PDF를 생성하는 중...");
+      toast.info("PDF를 생성하는 중입니다. 잠시만 기다려주세요...");
 
       // html2canvas와 jsPDF 동적 import
       const html2canvas = (await import("html2canvas")).default;
@@ -45,6 +45,7 @@ export default function Result() {
         scale: 2, // 고해상도
         backgroundColor: "#ffffff",
         logging: false,
+        useCORS: true,
       });
 
       // 캔버스를 이미지로 변환
@@ -79,10 +80,10 @@ export default function Result() {
       const today = new Date().toISOString().split("T")[0];
       pdf.save(`my-core-values-${today}.pdf`);
 
-      toast.success("PDF가 다운로드되었습니다!");
+      toast.success("PDF가 성공적으로 다운로드되었습니다!");
     } catch (error) {
       console.error("PDF generation failed:", error);
-      toast.error("PDF 생성에 실패했습니다.");
+      toast.error("PDF 생성에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -95,19 +96,15 @@ export default function Result() {
     toast.success("처음부터 다시 시작합니다.");
   };
 
-  const handleShare = () => {
-    const text = `나의 핵심 가치:\n${finalValues.map((v, i) => `${i + 1}. ${v.korean} (${v.english})`).join("\n")}`;
+  const handleCopyToClipboard = async () => {
+    const text = `나의 핵심 가치\n\n${finalValues.map((v, i) => `${i + 1}. ${v.korean} (${v.english})\n   ${v.description}`).join("\n\n")}`;
     
-    if (navigator.share) {
-      navigator.share({
-        title: "나의 핵심 가치",
-        text: text,
-      }).catch(() => {
-        // 공유 취소 시 무시
-      });
-    } else {
-      navigator.clipboard.writeText(text);
-      toast.success("클립보드에 복사되었습니다!");
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("클립보드에 복사되었습니다! 원하는 곳에 붙여넣기 하세요.");
+    } catch (error) {
+      console.error("Failed to copy:", error);
+      toast.error("복사에 실패했습니다.");
     }
   };
 
@@ -118,16 +115,24 @@ export default function Result() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container py-12">
-        <div id="result-container" className="max-w-4xl mx-auto space-y-8 bg-background p-8 rounded-lg">
+        {/* PDF 생성 영역 - RGB 색상 사용 */}
+        <div 
+          id="result-container" 
+          className="max-w-4xl mx-auto space-y-8 p-8 rounded-lg"
+          style={{
+            backgroundColor: '#ffffff',
+            color: '#1a1a1a',
+          }}
+        >
           {/* 축하 메시지 */}
           <div className="text-center space-y-4">
-            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
-              <span className="text-primary font-semibold">🎉 완료!</span>
+            <div className="inline-block px-4 py-2 rounded-full" style={{ backgroundColor: '#e0f2fe' }}>
+              <span style={{ color: '#0369a1', fontWeight: 600 }}>🎉 완료!</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            <h1 className="text-3xl md:text-4xl font-bold" style={{ color: '#1a1a1a' }}>
               당신의 핵심 가치를 발견했습니다
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg" style={{ color: '#6b7280' }}>
               이 세 가지 가치가 당신의 삶을 이끄는 나침반입니다.
             </p>
           </div>
@@ -135,36 +140,55 @@ export default function Result() {
           {/* 가치 카드들 */}
           <div className="grid gap-6">
             {finalValues.map((value, index) => (
-              <Card key={value.id} className="border-2">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <CardTitle className="text-2xl">{value.korean}</CardTitle>
-                          <CardDescription className="text-base">{value.english}</CardDescription>
-                        </div>
+              <div 
+                key={value.id} 
+                className="rounded-lg p-6"
+                style={{
+                  border: '2px solid #e5e7eb',
+                  backgroundColor: '#ffffff',
+                }}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg"
+                        style={{
+                          backgroundColor: '#0369a1',
+                          color: '#ffffff',
+                        }}
+                      >
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold" style={{ color: '#1a1a1a' }}>
+                          {value.korean}
+                        </h3>
+                        <p className="text-base" style={{ color: '#6b7280' }}>
+                          {value.english}
+                        </p>
                       </div>
                     </div>
-                    <span className="text-xs px-3 py-1 rounded-full bg-accent/20 text-accent-foreground">
-                      #{value.category}
-                    </span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-foreground/80 text-lg leading-relaxed">
-                    {value.description}
-                  </p>
-                </CardContent>
-              </Card>
+                  <span 
+                    className="text-xs px-3 py-1 rounded-full"
+                    style={{
+                      backgroundColor: '#f3f4f6',
+                      color: '#4b5563',
+                    }}
+                  >
+                    #{value.category}
+                  </span>
+                </div>
+                <p className="text-lg leading-relaxed" style={{ color: '#4b5563' }}>
+                  {value.description}
+                </p>
+              </div>
             ))}
           </div>
 
           {/* 날짜 */}
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm" style={{ color: '#9ca3af' }}>
             <p>{new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</p>
             <p className="mt-2">전문코치과정 · 가치 발견 그룹코칭 프로그램</p>
           </div>
@@ -186,11 +210,11 @@ export default function Result() {
             <Button
               size="lg"
               variant="outline"
-              onClick={handleShare}
+              onClick={handleCopyToClipboard}
               className="gap-2"
             >
-              <Share2 className="w-5 h-5" />
-              공유하기
+              <Copy className="w-5 h-5" />
+              클립보드에 복사
             </Button>
 
             <Button

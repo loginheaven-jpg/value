@@ -13,6 +13,7 @@ export default function Sort() {
   const [allValues, setAllValues] = useState<Value[]>([]);
   const [availableValues, setAvailableValues] = useState<Value[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [stepHistory, setStepHistory] = useState<Array<{ step: Step; values: Value[]; selected: Set<number> }>>([]);
   const [loading, setLoading] = useState(true);
 
   // 가치 데이터 로드
@@ -91,6 +92,13 @@ export default function Sort() {
       localStorage.setItem("final-values", JSON.stringify(finalValues));
       setLocation("/result");
     } else {
+      // 현재 상태를 히스토리에 저장
+      setStepHistory([...stepHistory, {
+        step: currentStep,
+        values: availableValues,
+        selected: new Set(selectedIds)
+      }]);
+
       // 다음 단계로
       const nextStep = (currentStep + 1) as Step;
       setCurrentStep(nextStep);
@@ -99,6 +107,19 @@ export default function Sort() {
       setSelectedIds(new Set());
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const handlePrevious = () => {
+    if (stepHistory.length === 0) return;
+
+    // 히스토리에서 이전 상태 복원
+    const previous = stepHistory[stepHistory.length - 1];
+    setCurrentStep(previous.step);
+    setAvailableValues(previous.values);
+    setSelectedIds(previous.selected);
+    setStepHistory(stepHistory.slice(0, -1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast.info("이전 단계로 돌아갔습니다.");
   };
 
   const handleBack = () => {
@@ -218,9 +239,23 @@ export default function Sort() {
         )}
       </main>
 
-      {/* Floating 다음 버튼 - 선택 완료 시만 표시 */}
-      {canProceed && (
-        <div className="fixed bottom-6 right-6 z-30">
+      {/* Floating 버튼 영역 */}
+      <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-3">
+        {/* 이전 단계 버튼 - 2단계부터 표시 */}
+        {currentStep > 1 && (
+          <Button
+            onClick={handlePrevious}
+            variant="outline"
+            size="lg"
+            className="gap-2 shadow-lg hover:shadow-xl transition-shadow bg-background"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            이전 단계
+          </Button>
+        )}
+
+        {/* 다음 단계 버튼 - 선택 완료 시만 표시 */}
+        {canProceed && (
           <Button
             onClick={handleNext}
             size="lg"
@@ -229,8 +264,8 @@ export default function Sort() {
             {currentStep === 4 ? "결과 보기" : "다음 단계"}
             <ArrowRight className="w-5 h-5" />
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
