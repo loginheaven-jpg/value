@@ -9,6 +9,7 @@ import { toast } from "sonner";
 export default function Result() {
   const [, setLocation] = useLocation();
   const [finalValues, setFinalValues] = useState<Value[]>([]);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("final-values");
@@ -26,49 +27,64 @@ export default function Result() {
 
   const handleDownloadPDF = async () => {
     try {
-      // jsPDF 동적 import
+      setIsGeneratingPDF(true);
+      toast.info("PDF를 생성하는 중...");
+
+      // html2canvas와 jsPDF 동적 import
+      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
-      
-      // 한글 폰트 지원을 위한 설정 (추후 개선 가능)
-      const doc = new jsPDF();
-      
-      // 제목
-      doc.setFontSize(20);
-      doc.text("My Core Values", 105, 20, { align: "center" });
-      
-      doc.setFontSize(16);
-      doc.text("Coach's Compass: Value Discovery", 105, 30, { align: "center" });
-      
-      // 날짜
-      doc.setFontSize(10);
-      const today = new Date().toLocaleDateString("ko-KR");
-      doc.text(today, 105, 40, { align: "center" });
-      
-      // 가치 목록
-      let yPos = 60;
-      finalValues.forEach((value, index) => {
-        doc.setFontSize(14);
-        doc.text(`${index + 1}. ${value.korean} (${value.english})`, 20, yPos);
-        
-        doc.setFontSize(10);
-        doc.text(value.description, 25, yPos + 7);
-        
-        doc.setFontSize(9);
-        doc.text(`Category: ${value.category}`, 25, yPos + 14);
-        
-        yPos += 30;
+
+      // PDF로 변환할 영역
+      const element = document.getElementById("result-container");
+      if (!element) {
+        throw new Error("결과 영역을 찾을 수 없습니다.");
+      }
+
+      // HTML을 캔버스로 변환
+      const canvas = await html2canvas(element, {
+        scale: 2, // 고해상도
+        backgroundColor: "#ffffff",
+        logging: false,
       });
-      
-      // 푸터
-      doc.setFontSize(8);
-      doc.text("Professional Coach Program - Value Discovery Group Coaching", 105, 280, { align: "center" });
-      
+
+      // 캔버스를 이미지로 변환
+      const imgData = canvas.toDataURL("image/png");
+
+      // PDF 생성
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // A4 크기에 맞게 이미지 크기 계산
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.addImage(
+        imgData,
+        "PNG",
+        imgX,
+        imgY,
+        imgWidth * ratio,
+        imgHeight * ratio
+      );
+
       // PDF 저장
-      doc.save(`my-core-values-${Date.now()}.pdf`);
+      const today = new Date().toISOString().split("T")[0];
+      pdf.save(`my-core-values-${today}.pdf`);
+
       toast.success("PDF가 다운로드되었습니다!");
     } catch (error) {
       console.error("PDF generation failed:", error);
       toast.error("PDF 생성에 실패했습니다.");
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -102,7 +118,7 @@ export default function Result() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div id="result-container" className="max-w-4xl mx-auto space-y-8 bg-background p-8 rounded-lg">
           {/* 축하 메시지 */}
           <div className="text-center space-y-4">
             <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
@@ -147,15 +163,24 @@ export default function Result() {
             ))}
           </div>
 
-          {/* 액션 버튼들 */}
+          {/* 날짜 */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>{new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</p>
+            <p className="mt-2">전문코치과정 · 가치 발견 그룹코칭 프로그램</p>
+          </div>
+        </div>
+
+        {/* 액션 버튼들 - PDF 영역 밖 */}
+        <div className="max-w-4xl mx-auto mt-8">
           <div className="flex flex-wrap gap-4 justify-center">
             <Button
               size="lg"
               onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
               className="gap-2"
             >
               <Download className="w-5 h-5" />
-              PDF 다운로드
+              {isGeneratingPDF ? "생성 중..." : "PDF 다운로드"}
             </Button>
 
             <Button
@@ -190,7 +215,7 @@ export default function Result() {
           </div>
 
           {/* 활용 안내 */}
-          <Card className="bg-muted/50">
+          <Card className="bg-muted/50 mt-8">
             <CardHeader>
               <CardTitle className="text-lg">💡 이제 무엇을 할까요?</CardTitle>
             </CardHeader>
@@ -211,9 +236,8 @@ export default function Result() {
           </Card>
 
           {/* 푸터 */}
-          <div className="text-center text-sm text-muted-foreground pt-8 border-t">
-            <p>전문코치과정 · 가치 발견 그룹코칭 프로그램</p>
-            <p className="mt-2">© 2025 Coach's Compass</p>
+          <div className="text-center text-sm text-muted-foreground pt-8 border-t mt-8">
+            <p>© 2025 Coach's Compass</p>
           </div>
         </div>
       </div>

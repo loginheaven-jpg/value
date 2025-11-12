@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ValueCard } from "@/components/ValueCard";
 import { Step, STEP_CONFIGS, Value } from "@/types/values";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -102,11 +102,7 @@ export default function Sort() {
   };
 
   const handleBack = () => {
-    if (currentStep === 1) {
-      setLocation("/");
-    } else {
-      toast.info("처음부터 다시 시작하시겠습니까?");
-    }
+    setLocation("/");
   };
 
   if (loading) {
@@ -121,10 +117,23 @@ export default function Sort() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24">
       {/* Sticky 헤더 */}
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b shadow-sm">
         <div className="container py-4 space-y-4">
+          {/* 처음으로 버튼 - 헤더 좌측 상단 */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="gap-2"
+            >
+              <Home className="w-4 h-4" />
+              <span className="hidden sm:inline">처음으로</span>
+            </Button>
+          </div>
+
           <ProgressBar currentStep={currentStep} />
           
           {/* 단계 안내 */}
@@ -202,34 +211,26 @@ export default function Sort() {
           <div className="text-center py-8">
             <div className="inline-block px-6 py-3 bg-primary/10 rounded-lg">
               <p className="text-primary font-semibold">
-                ✓ 모든 카드를 선택했습니다! 다음 단계로 진행하세요.
+                ✓ 모든 카드를 선택했습니다! 우측 하단 버튼을 눌러 다음 단계로 진행하세요.
               </p>
             </div>
           </div>
         )}
+      </main>
 
-        {/* 네비게이션 버튼 */}
-        <div className="max-w-3xl mx-auto flex justify-between items-center mt-8 pt-6 border-t">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {currentStep === 1 ? "처음으로" : "이전"}
-          </Button>
-
+      {/* Floating 다음 버튼 - 선택 완료 시만 표시 */}
+      {canProceed && (
+        <div className="fixed bottom-6 right-6 z-30">
           <Button
             onClick={handleNext}
-            disabled={!canProceed}
-            className="gap-2"
             size="lg"
+            className="gap-2 shadow-lg hover:shadow-xl transition-shadow"
           >
             {currentStep === 4 ? "결과 보기" : "다음 단계"}
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-5 h-5" />
           </Button>
         </div>
-      </main>
+      )}
     </div>
   );
 }
