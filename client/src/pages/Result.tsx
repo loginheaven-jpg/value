@@ -238,6 +238,40 @@ export default function Result() {
         (section as HTMLElement).style.display = "none";
       });
 
+      // OKLCH 색상을 RGB로 임시 변환
+      const originalStyles = new Map<Element, string>();
+      const allElements = element.querySelectorAll("*");
+      
+      allElements.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        const computedStyle = window.getComputedStyle(htmlEl);
+        
+        // 배경색 변환
+        const bgColor = computedStyle.backgroundColor;
+        if (bgColor && bgColor !== "rgba(0, 0, 0, 0)") {
+          originalStyles.set(el, htmlEl.style.cssText);
+          htmlEl.style.backgroundColor = bgColor; // computed style은 이미 RGB
+        }
+        
+        // 텍스트 색상 변환
+        const color = computedStyle.color;
+        if (color) {
+          if (!originalStyles.has(el)) {
+            originalStyles.set(el, htmlEl.style.cssText);
+          }
+          htmlEl.style.color = color; // computed style은 이미 RGB
+        }
+        
+        // 테두리 색상 변환
+        const borderColor = computedStyle.borderColor;
+        if (borderColor && borderColor !== "rgba(0, 0, 0, 0)") {
+          if (!originalStyles.has(el)) {
+            originalStyles.set(el, htmlEl.style.cssText);
+          }
+          htmlEl.style.borderColor = borderColor; // computed style은 이미 RGB
+        }
+      });
+
       // HTML을 캔버스로 변환
       const canvas = await html2canvas(element, {
         scale: 2, // 고해상도
@@ -245,11 +279,23 @@ export default function Result() {
         logging: false,
         useCORS: true,
       });
+      
+      // 원래 스타일 복원
+      originalStyles.forEach((cssText, el) => {
+        (el as HTMLElement).style.cssText = cssText;
+      });
 
       // 성찰 질문 영역 다시 표시
       reflectionSections.forEach((section) => {
         (section as HTMLElement).style.display = "";
       });
+      
+      // 원래 스타일이 복원되지 않은 경우를 위한 추가 복원
+      if (originalStyles.size > 0) {
+        originalStyles.forEach((cssText, el) => {
+          (el as HTMLElement).style.cssText = cssText;
+        });
+      }
 
       // 캔버스를 이미지로 변환
       const imgData = canvas.toDataURL("image/png");
