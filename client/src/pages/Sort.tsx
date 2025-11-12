@@ -7,6 +7,18 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
+interface SavedProgress {
+  step: Step;
+  selectedIds: number[];
+  availableValueIds: number[];
+  stepHistory: Array<{
+    step: Step;
+    valueIds: number[];
+    selectedIds: number[];
+  }>;
+  timestamp: number;
+}
+
 export default function Sort() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -15,6 +27,7 @@ export default function Sort() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [stepHistory, setStepHistory] = useState<Array<{ step: Step; values: Value[]; selected: Set<number> }>>([]);
   const [loading, setLoading] = useState(true);
+  const [restored, setRestored] = useState(false);
 
   // 가치 데이터 로드
   useEffect(() => {
@@ -34,30 +47,73 @@ export default function Sort() {
 
   // 로컬 스토리지에서 진행 상황 복원
   useEffect(() => {
+    if (allValues.length === 0 || restored) return;
+
     const saved = localStorage.getItem("values-progress");
     if (saved) {
       try {
-        const { step, selectedIds: savedIds } = JSON.parse(saved);
-        setCurrentStep(step);
-        setSelectedIds(new Set(savedIds));
+        const progress: SavedProgress = JSON.parse(saved);
+        
+        // 24시간 이내 데이터만 복원
+        const hoursSinceLastSave = (Date.now() - progress.timestamp) / (1000 * 60 * 60);
+        if (hoursSinceLastSave > 24) {
+          localStorage.removeItem("values-progress");
+          toast.info("저장된 진행 상황이 만료되어 처음부터 시작합니다.");
+          setRestored(true);
+          return;
+        }
+
+        // 단계 복원
+        setCurrentStep(progress.step);
+
+        // availableValues 복원
+        const restoredAvailable = allValues.filter(v => 
+          progress.availableValueIds.includes(v.id)
+        );
+        setAvailableValues(restoredAvailable);
+
+        // 선택된 ID 복원
+        setSelectedIds(new Set(progress.selectedIds));
+
+        // 히스토리 복원
+        const restoredHistory = progress.stepHistory.map(h => ({
+          step: h.step,
+          values: allValues.filter(v => h.valueIds.includes(v.id)),
+          selected: new Set(h.selectedIds)
+        }));
+        setStepHistory(restoredHistory);
+
+        setRestored(true);
+        toast.success(`저장된 진행 상황을 불러왔습니다. (${progress.step}단계)`);
       } catch (e) {
         console.error("Failed to restore progress:", e);
+        localStorage.removeItem("values-progress");
+        toast.error("저장된 데이터를 불러오는데 실패했습니다. 처음부터 시작합니다.");
+        setRestored(true);
       }
+    } else {
+      setRestored(true);
     }
-  }, []);
+  }, [allValues, restored]);
 
   // 진행 상황 저장
   useEffect(() => {
-    if (allValues.length > 0) {
-      localStorage.setItem(
-        "values-progress",
-        JSON.stringify({
-          step: currentStep,
-          selectedIds: Array.from(selectedIds),
-        })
-      );
-    }
-  }, [currentStep, selectedIds, allValues]);
+    if (allValues.length === 0 || !restored) return;
+
+    const progress: SavedProgress = {
+      step: currentStep,
+      selectedIds: Array.from(selectedIds),
+      availableValueIds: availableValues.map(v => v.id),
+      stepHistory: stepHistory.map(h => ({
+        step: h.step,
+        valueIds: h.values.map(v => v.id),
+        selectedIds: Array.from(h.selected)
+      })),
+      timestamp: Date.now()
+    };
+
+    localStorage.setItem("values-progress", JSON.stringify(progress));
+  }, [currentStep, selectedIds, availableValues, stepHistory, allValues, restored]);
 
   const config = STEP_CONFIGS[currentStep - 1];
   const canProceed = selectedIds.size === config.to;
@@ -90,6 +146,8 @@ export default function Sort() {
       // 최종 결과 페이지로 이동
       const finalValues = allValues.filter((v) => selectedIds.has(v.id));
       localStorage.setItem("final-values", JSON.stringify(finalValues));
+      // 진행 상황 삭제 (완료했으므로)
+      localStorage.removeItem("values-progress");
       setLocation("/result");
     } else {
       // 현재 상태를 히스토리에 저장
@@ -153,6 +211,11 @@ export default function Sort() {
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">처음으로</span>
             </Button>
+            
+            {/* 자동 저장 안내 */}
+            <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
+              💾 자동 저장됨
+            </div>
           </div>
 
           <ProgressBar currentStep={currentStep} />
