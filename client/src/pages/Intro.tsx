@@ -9,16 +9,24 @@ import { toast } from "sonner";
 
 export default function Intro() {
   const [, setLocation] = useLocation();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
   const handleStart = () => {
+    // 이름 유효성 검증
+    if (!name || name.trim().length === 0) {
+      toast.error("이름을 입력해주세요.");
+      return;
+    }
+
     // 이메일 유효성 검증
     if (!email || !email.includes("@")) {
       toast.error("올바른 이메일 주소를 입력해주세요.");
       return;
     }
 
-    // 이메일을 로컬 스토리지에 저장
+    // 이름과 이메일을 로컬 스토리지에 저장
+    localStorage.setItem("values-name", name.trim());
     localStorage.setItem("values-email", email);
     
     setLocation("/sort");
@@ -98,30 +106,47 @@ export default function Intro() {
           </Card>
         </div>
 
-        {/* 이메일 입력 및 시작 버튼 */}
+        {/* 이름 및 이메일 입력 */}
         <div className="max-w-md mx-auto space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-center">시작하기</CardTitle>
               <CardDescription className="text-center">
-                결과를 저장하고 이메일로 받아보려면 이메일 주소를 입력해주세요.
+                결과를 저장하고 이메일로 받아보려면 정보를 입력해주세요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">이메일 주소</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleStart();
-                    }
-                  }}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">이름 *</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="홍길동"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleStart();
+                      }
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">이메일 주소 *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleStart();
+                      }
+                    }}
+                  />
+                </div>
               </div>
               <Button
                 size="lg"

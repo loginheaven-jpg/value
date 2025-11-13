@@ -18,7 +18,6 @@ export const appRouter = router({
       } as const;
     }),
   }),
-
   values: router({
     /**
      * Save values assessment result
@@ -26,6 +25,7 @@ export const appRouter = router({
     save: publicProcedure
       .input(
         z.object({
+          name: z.string().min(1),
           email: z.string().email(),
           value1: z.string(),
           value2: z.string(),
@@ -38,11 +38,12 @@ export const appRouter = router({
       }),
 
     /**
-     * Get all assessments (admin only - for now public for testing)
+     * Get all values assessment results (admin)
      */
-    getAll: publicProcedure.query(async () => {
-      return await getAllValuesAssessments();
-    }),
+    getAll: publicProcedure
+      .query(async () => {
+        return await getAllValuesAssessments();
+      }),
 
     /**
      * Get assessments by email

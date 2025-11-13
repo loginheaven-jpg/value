@@ -31,6 +31,7 @@ export type InsertUser = typeof users.$inferInsert;
  */
 export const valuesAssessments = mysqlTable("values_assessments", {
   id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
   email: varchar("email", { length: 320 }).notNull(),
   value1: varchar("value1", { length: 100 }).notNull(),
   value2: varchar("value2", { length: 100 }).notNull(),

@@ -1,0 +1,1 @@
+ALTER TABLE `values_assessments` ADD `name` varchar(100) NOT NULL;

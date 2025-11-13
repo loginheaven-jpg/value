@@ -15,6 +15,13 @@
       "when": 1763008486317,
       "tag": "0001_lush_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1763009284854,
+      "tag": "0002_wandering_vanisher",
+      "breakpoints": true
     }
   ]
 }

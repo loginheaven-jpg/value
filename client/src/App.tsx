@@ -7,15 +7,17 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Intro from "./pages/Intro";
 import Sort from "./pages/Sort";
 import Result from "./pages/Result";
+import Admin from "./pages/Admin";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
+  // make sure to consider if you need authenticatiofunction Router() {
   return (
     <Switch>
       <Route path={"/"} component={Intro} />
       <Route path={"/sort"} component={Sort} />
       <Route path={"/result"} component={Result} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path={"/admin"} component={Admin} />
+      <Route path={"/ 404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

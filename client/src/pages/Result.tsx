@@ -1,7 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Value } from "@/types/values";
-import { Download, Home, RotateCcw, Copy, ChevronDown, ChevronUp, Save } from "lucide-react";
+import { Download, Home, RotateCcw, Mail, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -49,152 +59,200 @@ const REFLECTION_QUESTIONS: Record<string, string[]> = {
     "최근 가장 의미 있었던 배움은 무엇인가요?"
   ],
   "창의성": [
-    "창의성을 발휘할 때 가장 살아있다고 느끼는 순간은 언제인가요?",
-    "창의적인 아이디어를 실현하기 위해 무엇을 하고 있나요?"
+    "창의성을 발휘할 때 어떤 느낌이 드나요?",
+    "당신의 창의성이 가장 빛났던 순간은 언제인가요?"
   ],
   "지혜": [
-    "당신의 지혜는 어떤 경험에서 나왔나요?",
-    "지혜를 나누고 싶은 사람이 있나요?"
+    "어떤 경험을 통해 지혜를 얻었나요?",
+    "지혜를 나누는 것이 당신에게 어떤 의미인가요?"
   ],
   "자기계발": [
-    "자기계발을 위해 현재 하고 있는 것은 무엇인가요?",
-    "어떤 모습으로 성장하고 싶나요?"
+    "자기계발을 위해 지금 하고 있는 일은 무엇인가요?",
+    "자기계발이 당신의 삶에 어떤 변화를 가져왔나요?"
   ],
   
   // 성취 관련 가치
   "성공": [
-    "당신에게 성공이란 구체적으로 무엇을 의미하나요?",
+    "성공이 당신에게 어떤 의미인가요?",
     "가장 자랑스러운 성공 경험은 무엇인가요?"
   ],
-  "성취": [
-    "최근 이룬 성취 중 가장 의미 있는 것은 무엇인가요?",
-    "다음으로 이루고 싶은 목표는 무엇인가요?"
-  ],
   "탁월함": [
-    "탁월함을 추구하는 영역은 어디인가요?",
+    "탁월함을 추구할 때 어떤 감정을 느끼나요?",
     "탁월함을 위해 어떤 노력을 하고 있나요?"
   ],
   "인정": [
-    "누구에게 인정받고 싶나요? 왜 그런가요?",
+    "타인의 인정이 당신에게 어떤 의미인가요?",
     "인정받았을 때 어떤 느낌이 드나요?"
   ],
-  "자부심": [
-    "무엇에 대해 가장 자부심을 느끼나요?",
-    "자부심을 느끼는 순간은 언제인가요?"
+  "전문성": [
+    "전문성을 키우기 위해 어떤 노력을 하고 있나요?",
+    "전문가로 인정받을 때 어떤 보람을 느끼나요?"
+  ],
+  "리더십": [
+    "리더십을 발휘할 때 어떤 가치를 중시하나요?",
+    "리더로서 가장 보람있었던 순간은 언제인가요?"
+  ],
+  "영향력": [
+    "타인에게 긍정적인 영향을 미친 경험은 무엇인가요?",
+    "영향력을 행사할 때 어떤 책임감을 느끼나요?"
   ],
   
-  // 진실/덕목 관련 가치
-  "나다움": [
-    "어떤 순간에 가장 '나답다'고 느끼나요?",
-    "나다움을 지키기 위해 포기한 것이 있나요?"
-  ],
-  "솔직함": [
-    "솔직함이 당신의 관계에 어떤 영향을 미치나요?",
-    "솔직하기 어려웠던 순간이 있었나요?"
-  ],
-  "원칙": [
-    "당신이 절대 타협할 수 없는 원칙은 무엇인가요?",
-    "원칙을 지키기 위해 어떤 희생을 한 적이 있나요?"
-  ],
+  // 덕목 관련 가치
   "용기": [
-    "최근 용기를 낸 경험은 무엇인가요?",
-    "용기가 필요한 순간은 언제인가요?"
+    "용기를 내야 했던 순간은 언제였나요?",
+    "용기가 당신의 삶을 어떻게 변화시켰나요?"
+  ],
+  "인내": [
+    "인내가 필요했던 상황에서 어떻게 극복했나요?",
+    "인내를 통해 얻은 것은 무엇인가요?"
+  ],
+  "친절": [
+    "최근 누군가에게 친절을 베푼 경험은 무엇인가요?",
+    "친절을 베풀 때 어떤 느낌이 드나요?"
   ],
   "겸손": [
-    "겸손이 당신의 성장에 어떻게 도움이 되나요?",
-    "겸손을 실천하는 구체적인 방법은 무엇인가요?"
+    "겸손이 당신의 관계에 어떤 영향을 미치나요?",
+    "겸손을 실천하기 위해 어떤 노력을 하나요?"
   ],
-  
-  // 영성/의미 관련 가치
-  "사명": [
-    "당신의 사명은 무엇이라고 생각하나요?",
-    "사명을 실현하기 위해 무엇을 하고 있나요?"
-  ],
-  "목적": [
-    "당신의 삶의 목적은 무엇인가요?",
-    "목적을 발견한 순간은 언제였나요?"
-  ],
-  "의미": [
-    "무엇이 당신의 삶을 의미 있게 만드나요?",
-    "의미를 느끼는 순간은 언제인가요?"
-  ],
-  "영성": [
-    "영성이 당신의 삶에서 어떤 역할을 하나요?",
-    "영적 성장을 위해 무엇을 하고 있나요?"
-  ],
-  "믿음": [
-    "무엇을 믿으며 살아가나요?",
-    "믿음이 흔들린 적이 있었나요? 어떻게 극복했나요?"
+  "양심": [
+    "양심에 따라 행동한 경험은 무엇인가요?",
+    "양심이 당신의 결정에 어떤 영향을 미치나요?"
   ],
   
   // 웰빙 관련 가치
   "건강": [
-    "건강을 위해 현재 실천하고 있는 것은 무엇인가요?",
-    "건강한 삶이 당신에게 왜 중요한가요?"
+    "건강을 위해 지금 실천하고 있는 것은 무엇인가요?",
+    "건강이 당신의 삶에 어떤 의미인가요?"
   ],
   "평온": [
     "평온을 느끼는 순간은 언제인가요?",
-    "평온을 유지하기 위해 무엇을 하고 있나요?"
+    "평온을 유지하기 위해 어떤 노력을 하나요?"
   ],
   "균형": [
-    "삶의 균형이 잘 잡혀 있나요? (1-10점)",
-    "균형을 위해 조정이 필요한 영역은 어디인가요?"
+    "삶의 균형을 위해 어떤 선택을 하고 있나요?",
+    "균형이 깨졌을 때 어떻게 회복하나요?"
   ],
-  "여유": [
-    "여유를 즐기는 방법은 무엇인가요?",
-    "여유가 당신의 삶에 어떤 영향을 미치나요?"
-  ],
-  
-  // 자율/자유 관련 가치
-  "자유": [
-    "자유가 당신에게 구체적으로 무엇을 의미하나요?",
-    "자유를 위해 포기한 것이 있나요?"
-  ],
-  "독립성": [
-    "독립성이 당신의 삶에서 어떻게 나타나나요?",
-    "독립성을 지키기 위해 무엇을 하고 있나요?"
-  ],
-  "자율성": [
-    "스스로 결정할 수 있는 영역은 어디인가요?",
-    "자율성이 제한될 때 어떤 감정이 드나요?"
+  "행복": [
+    "행복을 느끼는 순간은 언제인가요?",
+    "행복을 위해 지금 하고 있는 일은 무엇인가요?"
   ],
   
-  // 정의/공정 관련 가치
+  // 영성 관련 가치
+  "신앙": [
+    "신앙이 당신의 삶에 어떤 의미인가요?",
+    "신앙을 통해 얻은 힘은 무엇인가요?"
+  ],
+  "사명": [
+    "당신의 사명은 무엇이라고 생각하나요?",
+    "사명을 실현하기 위해 어떤 노력을 하고 있나요?"
+  ],
+  
+  // 사회 관련 가치
   "정의": [
-    "당신이 가장 화나게 하는 불의는 무엇인가요?",
-    "정의를 실현하기 위해 무엇을 하고 있나요?"
+    "정의를 위해 행동한 경험은 무엇인가요?",
+    "정의가 당신의 삶에 어떤 의미인가요?"
   ],
   "공정성": [
-    "공정함이 당신의 결정에 어떤 영향을 미치나요?",
-    "공정하지 못한 상황을 목격했을 때 어떻게 행동하나요?"
+    "공정성을 실천하기 위해 어떤 노력을 하나요?",
+    "공정하지 않은 상황에서 어떻게 대응하나요?"
   ],
-  "평등": [
-    "평등을 실현하기 위해 어떤 노력을 하고 있나요?",
-    "평등이 당신의 관계에 어떤 영향을 미치나요?"
+  "봉사": [
+    "봉사를 통해 얻은 보람은 무엇인가요?",
+    "봉사가 당신의 삶에 어떤 의미인가요?"
+  ],
+  "환경": [
+    "환경을 위해 실천하고 있는 것은 무엇인가요?",
+    "환경 보호가 당신에게 어떤 의미인가요?"
   ],
   
   // 한국 특화 가치
   "효도": [
-    "부모님을 공경하는 구체적인 방법은 무엇인가요?",
-    "효도가 당신의 삶에서 어떤 의미를 가지나요?"
+    "효도를 실천하기 위해 어떤 노력을 하고 있나요?",
+    "효도가 당신의 삶에 어떤 의미인가요?"
   ],
   "예의": [
-    "예의를 지키는 것이 왜 중요한가요?",
-    "예의가 당신의 관계에 어떤 영향을 미치나요?"
-  ],
-  "조화": [
-    "조화를 추구하는 이유는 무엇인가요?",
-    "갈등 상황에서 조화를 이루기 위해 어떻게 하나요?"
+    "예의를 지키는 것이 당신에게 어떤 의미인가요?",
+    "예의를 통해 얻은 것은 무엇인가요?"
   ],
   "정": [
-    "정이 당신의 관계에서 어떻게 나타나나요?",
-    "정을 나누는 순간은 언제인가요?"
+    "정을 나누는 관계가 당신에게 어떤 의미인가요?",
+    "정을 느끼는 순간은 언제인가요?"
   ],
   
-  // 기본 질문 (매핑되지 않은 가치용)
+  // 기타 가치
+  "자유": [
+    "자유가 당신의 삶에서 어떻게 나타나나요?",
+    "자유를 위해 어떤 선택을 했나요?"
+  ],
+  "독립": [
+    "독립적으로 살아가기 위해 어떤 노력을 하나요?",
+    "독립이 당신에게 어떤 의미인가요?"
+  ],
+  "나다움": [
+    "나다움을 지키기 위해 어떤 노력을 하나요?",
+    "나답게 산다는 것이 당신에게 어떤 의미인가요?"
+  ],
+  "존엄": [
+    "존엄을 지키기 위해 어떤 선택을 했나요?",
+    "존엄이 당신의 삶에 어떤 의미인가요?"
+  ],
+  "원칙": [
+    "당신의 원칙은 무엇인가요?",
+    "원칙을 지키기 위해 어떤 희생을 한 적이 있나요?"
+  ],
+  "솔직함": [
+    "솔직함을 실천하기 위해 어떤 노력을 하나요?",
+    "솔직함이 당신의 관계에 어떤 영향을 미치나요?"
+  ],
+  "책임감": [
+    "책임감을 느끼는 순간은 언제인가요?",
+    "책임을 다하기 위해 어떤 노력을 하나요?"
+  ],
+  "성실": [
+    "성실함을 실천하기 위해 어떤 노력을 하나요?",
+    "성실함이 당신의 삶에 어떤 변화를 가져왔나요?"
+  ],
+  "근면": [
+    "근면함을 실천하기 위해 어떤 노력을 하나요?",
+    "근면함이 당신에게 어떤 의미인가요?"
+  ],
+  "자부심": [
+    "자부심을 느끼는 순간은 언제인가요?",
+    "자부심이 당신의 삶에 어떤 영향을 미치나요?"
+  ],
+  "체면": [
+    "체면을 지키는 것이 당신에게 어떤 의미인가요?",
+    "체면과 진정성 사이에서 어떻게 균형을 맞추나요?"
+  ],
+  "명예": [
+    "명예가 당신의 삶에서 어떤 의미인가요?",
+    "명예를 지키기 위해 어떤 노력을 하나요?"
+  ],
+  "충성": [
+    "충성을 다하는 대상은 누구/무엇인가요?",
+    "충성이 당신에게 어떤 의미인가요?"
+  ],
+  "존중": [
+    "타인을 존중하기 위해 어떤 노력을 하나요?",
+    "존중받을 때 어떤 느낌이 드나요?"
+  ],
+  "조화": [
+    "조화를 이루기 위해 어떤 노력을 하나요?",
+    "조화가 당신의 삶에 어떤 의미인가요?"
+  ],
+  "경청": [
+    "경청을 실천하기 위해 어떤 노력을 하나요?",
+    "경청을 통해 얻은 것은 무엇인가요?"
+  ],
+  "평판": [
+    "평판이 당신의 삶에서 어떤 의미인가요?",
+    "평판을 관리하기 위해 어떤 노력을 하나요?"
+  ],
+  
+  // 기본 질문 (매칭되지 않는 가치용)
   "default": [
-    "이 가치가 최근 당신의 삶에서 어떻게 나타났나요?",
-    "이 가치를 더 실천하기 위해 무엇을 할 수 있나요?"
+    "이 가치가 당신의 삶에서 구체적으로 어떻게 나타나나요?",
+    "이 가치를 실천하기 위해 어떤 노력을 하고 있나요?"
   ]
 };
 
@@ -203,7 +261,8 @@ export default function Result() {
   const [finalValues, setFinalValues] = useState<Value[]>([]);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
-  const [isSaved, setIsSaved] = useState(false);
+  const [showRestartDialog, setShowRestartDialog] = useState(false);
+  const [showHomeDialog, setShowHomeDialog] = useState(false);
 
   // tRPC mutation
   const saveValuesMutation = trpc.values.save.useMutation();
@@ -212,7 +271,29 @@ export default function Result() {
     const saved = localStorage.getItem("final-values");
     if (saved) {
       try {
-        setFinalValues(JSON.parse(saved));
+        const values = JSON.parse(saved);
+        setFinalValues(values);
+        
+        // 자동 DB 저장
+        const name = localStorage.getItem("values-name");
+        const email = localStorage.getItem("values-email");
+        
+        if (name && email && values.length === 3) {
+          saveValuesMutation.mutate({
+            name,
+            email,
+            value1: values[0].korean,
+            value2: values[1].korean,
+            value3: values[2].korean,
+          }, {
+            onSuccess: () => {
+              console.log("Results auto-saved to database");
+            },
+            onError: (error) => {
+              console.error("Failed to auto-save results:", error);
+            }
+          });
+        }
       } catch (e) {
         console.error("Failed to load final values:", e);
         setLocation("/");
@@ -253,86 +334,54 @@ export default function Result() {
         
         // 배경색 변환
         const bgColor = computedStyle.backgroundColor;
-        if (bgColor && bgColor !== "rgba(0, 0, 0, 0)") {
-          originalStyles.set(el, htmlEl.style.cssText);
-          htmlEl.style.backgroundColor = bgColor; // computed style은 이미 RGB
+        if (bgColor && bgColor.includes("oklch")) {
+          originalStyles.set(el, htmlEl.style.backgroundColor);
+          htmlEl.style.backgroundColor = bgColor;
         }
         
         // 텍스트 색상 변환
-        const color = computedStyle.color;
-        if (color) {
+        const textColor = computedStyle.color;
+        if (textColor && textColor.includes("oklch")) {
           if (!originalStyles.has(el)) {
-            originalStyles.set(el, htmlEl.style.cssText);
+            originalStyles.set(el, htmlEl.style.color);
           }
-          htmlEl.style.color = color; // computed style은 이미 RGB
-        }
-        
-        // 테두리 색상 변환
-        const borderColor = computedStyle.borderColor;
-        if (borderColor && borderColor !== "rgba(0, 0, 0, 0)") {
-          if (!originalStyles.has(el)) {
-            originalStyles.set(el, htmlEl.style.cssText);
-          }
-          htmlEl.style.borderColor = borderColor; // computed style은 이미 RGB
+          htmlEl.style.color = textColor;
         }
       });
 
-      // HTML을 캔버스로 변환
+      // Canvas로 변환 (고해상도)
       const canvas = await html2canvas(element, {
-        scale: 2, // 고해상도
+        scale: 2,
         backgroundColor: "#ffffff",
         logging: false,
         useCORS: true,
       });
-      
+
       // 원래 스타일 복원
-      originalStyles.forEach((cssText, el) => {
-        (el as HTMLElement).style.cssText = cssText;
+      originalStyles.forEach((originalValue, el) => {
+        (el as HTMLElement).style.cssText = originalValue;
       });
 
       // 성찰 질문 영역 다시 표시
       reflectionSections.forEach((section) => {
         (section as HTMLElement).style.display = "";
       });
-      
-      // 원래 스타일이 복원되지 않은 경우를 위한 추가 복원
-      if (originalStyles.size > 0) {
-        originalStyles.forEach((cssText, el) => {
-          (el as HTMLElement).style.cssText = cssText;
-        });
-      }
-
-      // 캔버스를 이미지로 변환
-      const imgData = canvas.toDataURL("image/png");
 
       // PDF 생성
+      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
       });
 
-      // A4 크기에 맞게 이미지 크기 계산
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(
-        imgData,
-        "PNG",
-        imgX,
-        imgY,
-        imgWidth * ratio,
-        imgHeight * ratio
-      );
-
-      // PDF 저장
-      const today = new Date().toISOString().split("T")[0];
-      pdf.save(`my-core-values-${today}.pdf`);
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      
+      const name = localStorage.getItem("values-name") || "참가자";
+      pdf.save(`${name}_가치발견결과.pdf`);
 
       toast.success("PDF가 성공적으로 다운로드되었습니다!");
     } catch (error) {
@@ -344,22 +393,33 @@ export default function Result() {
   };
 
   const handleRestart = () => {
+    setShowRestartDialog(true);
+  };
+
+  const confirmRestart = () => {
     localStorage.removeItem("values-progress");
     localStorage.removeItem("final-values");
+    localStorage.removeItem("values-name");
+    localStorage.removeItem("values-email");
     setLocation("/");
     toast.success("처음부터 다시 시작합니다.");
   };
 
-  const handleCopyToClipboard = async () => {
-    const text = `나의 핵심 가치\n\n${finalValues.map((v, i) => `${i + 1}. ${v.korean} (${v.english})\n   ${v.description}`).join("\n\n")}`;
-    
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("클립보드에 복사되었습니다! 원하는 곳에 붙여넣기 하세요.");
-    } catch (error) {
-      console.error("Failed to copy:", error);
-      toast.error("복사에 실패했습니다.");
-    }
+  const handleHome = () => {
+    setShowHomeDialog(true);
+  };
+
+  const confirmHome = () => {
+    localStorage.removeItem("values-progress");
+    localStorage.removeItem("final-values");
+    localStorage.removeItem("values-name");
+    localStorage.removeItem("values-email");
+    setLocation("/");
+  };
+
+  const handleSendEmail = async () => {
+    toast.info("이메일 발송 기능은 곧 추가될 예정입니다!");
+    // TODO: 이메일 발송 기능 구현
   };
 
   const toggleCard = (id: number) => {
@@ -376,40 +436,11 @@ export default function Result() {
     return REFLECTION_QUESTIONS[korean] || REFLECTION_QUESTIONS["default"];
   };
 
-  const handleSaveToServer = async () => {
-    try {
-      const email = localStorage.getItem("values-email");
-      
-      if (!email) {
-        toast.error("이메일 정보를 찾을 수 없습니다. 처음부터 다시 시작해주세요.");
-        return;
-      }
-
-      if (finalValues.length !== 3) {
-        toast.error("3개의 가치가 선택되지 않았습니다.");
-        return;
-      }
-
-      toast.info("결과를 저장하는 중입니다...");
-
-      await saveValuesMutation.mutateAsync({
-        email,
-        value1: finalValues[0].korean,
-        value2: finalValues[1].korean,
-        value3: finalValues[2].korean,
-      });
-
-      setIsSaved(true);
-      toast.success("결과가 성공적으로 저장되었습니다! 이메일로 결과를 확인하세요.");
-    } catch (error) {
-      console.error("Failed to save values:", error);
-      toast.error("저장에 실패했습니다. 다시 시도해주세요.");
-    }
-  };
-
   if (finalValues.length === 0) {
     return null;
   }
+
+  const name = localStorage.getItem("values-name") || "참가자";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -429,121 +460,74 @@ export default function Result() {
               <span style={{ color: '#0369a1', fontWeight: 600 }}>🎉 완료!</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold" style={{ color: '#1a1a1a' }}>
-              당신의 핵심 가치를 발견했습니다
+              {name}님의 핵심 가치
             </h1>
             <p className="text-lg" style={{ color: '#6b7280' }}>
               이 세 가지 가치가 당신의 삶을 이끄는 나침반입니다.
             </p>
           </div>
 
-          {/* 가치 카드들 */}
-          <div className="grid gap-6">
-            {finalValues.map((value, index) => (
-              <div 
-                key={value.id} 
-                className="rounded-lg p-6"
-                style={{
-                  border: '2px solid #e5e7eb',
-                  backgroundColor: '#ffffff',
-                }}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg"
-                        style={{
-                          backgroundColor: '#0369a1',
-                          color: '#ffffff',
-                        }}
-                      >
-                        {index + 1}
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold" style={{ color: '#1a1a1a' }}>
-                          {value.korean}
-                        </h3>
-                        <p className="text-base" style={{ color: '#6b7280' }}>
-                          {value.english}
+          {/* 성찰 질문 카드들 */}
+          <div className="space-y-4">
+            {finalValues.map((value, index) => {
+              const isExpanded = expandedCards.has(value.id);
+              const questions = getReflectionQuestions(value.korean);
+
+              return (
+                <Card key={value.id} className="overflow-hidden">
+                  <CardContent className="p-6">
+                    {/* 가치 정보 (한글 + 영문 + 설명 가로 배치) */}
+                    <div 
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => toggleCard(value.id)}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-baseline gap-3 mb-2">
+                          <span className="text-2xl font-bold text-primary">
+                            {index + 1}. {value.korean}
+                          </span>
+                          <span className="text-lg text-muted-foreground">
+                            {value.english}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground/70">
+                          {value.description}
                         </p>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-4"
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="w-5 h-5" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5" />
+                        )}
+                      </Button>
                     </div>
-                  </div>
-                  <span 
-                    className="text-xs px-3 py-1 rounded-full"
-                    style={{
-                      backgroundColor: '#f3f4f6',
-                      color: '#4b5563',
-                    }}
-                  >
-                    #{value.category}
-                  </span>
-                </div>
-                <p className="text-lg leading-relaxed" style={{ color: '#4b5563' }}>
-                  {value.description}
-                </p>
-              </div>
-            ))}
-          </div>
 
-          {/* 날짜 */}
-          <div className="text-center text-sm" style={{ color: '#9ca3af' }}>
-            <p>{new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</p>
-            <p className="mt-2">전문코치과정 · 가치 발견 그룹코칭 프로그램</p>
-          </div>
-        </div>
-
-        {/* 성찰 질문 영역 - PDF 영역 밖 */}
-        <div className="max-w-4xl mx-auto mt-8 space-y-4">
-          <h2 className="text-2xl font-bold text-center mb-6">💭 성찰 질문</h2>
-          <p className="text-center text-muted-foreground mb-8">
-            각 가치를 클릭하여 성찰 질문을 확인하고, 더 깊이 탐색해보세요.
-          </p>
-
-          {finalValues.map((value) => {
-            const questions = getReflectionQuestions(value.korean);
-            const isExpanded = expandedCards.has(value.id);
-
-            return (
-              <Card 
-                key={value.id} 
-                className="reflection-section cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => toggleCard(value.id)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                        {finalValues.indexOf(value) + 1}
-                      </div>
-                      <h3 className="text-xl font-bold">{value.korean}</h3>
-                    </div>
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    )}
-                  </div>
-
-                  {isExpanded && (
-                    <div className="mt-6 space-y-4 pl-11">
-                      {questions.map((question, idx) => (
-                        <div key={idx} className="flex gap-3">
-                          <span className="text-primary font-semibold shrink-0">Q{idx + 1}.</span>
-                          <p className="text-foreground/80">{question}</p>
+                    {/* 성찰 질문 (확장 시 표시) */}
+                    {isExpanded && (
+                      <div className="reflection-section mt-6 pt-6 border-t space-y-4">
+                        <div className="space-y-3">
+                          {questions.map((question, qIndex) => (
+                            <div key={qIndex} className="flex gap-3">
+                              <span className="text-primary font-semibold shrink-0">Q{qIndex + 1}.</span>
+                              <p className="text-foreground/80">{question}</p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                      <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                        <p className="text-sm text-muted-foreground italic">
+                        <p className="text-sm text-muted-foreground italic mt-4">
                           💡 이 질문들을 워크북에 기록하거나, 코칭 세션에서 파트너와 함께 탐색해보세요.
                         </p>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
         {/* 액션 버튼들 */}
@@ -551,12 +535,11 @@ export default function Result() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Button
               size="lg"
-              onClick={handleSaveToServer}
-              disabled={saveValuesMutation.isPending || isSaved}
+              onClick={handleSendEmail}
               className="gap-2"
             >
-              <Save className="w-5 h-5" />
-              {saveValuesMutation.isPending ? "저장 중..." : isSaved ? "저장 완료" : "결과 저장"}
+              <Mail className="w-5 h-5" />
+              이메일 발송
             </Button>
 
             <Button
@@ -573,16 +556,6 @@ export default function Result() {
             <Button
               size="lg"
               variant="outline"
-              onClick={handleCopyToClipboard}
-              className="gap-2"
-            >
-              <Copy className="w-5 h-5" />
-              클립보드에 복사
-            </Button>
-
-            <Button
-              size="lg"
-              variant="outline"
               onClick={handleRestart}
               className="gap-2"
             >
@@ -593,7 +566,7 @@ export default function Result() {
             <Button
               size="lg"
               variant="ghost"
-              onClick={() => setLocation("/")}
+              onClick={handleHome}
               className="gap-2"
             >
               <Home className="w-5 h-5" />
@@ -606,7 +579,7 @@ export default function Result() {
             <CardContent className="p-6 space-y-3 text-sm text-foreground/80">
               <h3 className="font-bold text-lg text-foreground mb-4">💡 이제 무엇을 할까요?</h3>
               <p>
-                <strong>1. 성찰하기:</strong> 위의 성찰 질문을 통해 각 가치를 더 깊이 탐색해보세요.
+                <strong>1. 성찰하기:</strong> 위의 화살표를 클릭하여 각 가치에 대한 성찰 질문을 탐색해보세요.
               </p>
               <p>
                 <strong>2. 실천하기:</strong> 이 가치들을 일상의 결정과 행동에 적용해보세요.
@@ -626,6 +599,44 @@ export default function Result() {
           </div>
         </div>
       </div>
+
+      {/* 다시 시작 확인 다이얼로그 */}
+      <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>정말 다시 시작하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              현재 결과가 삭제되고 처음부터 다시 시작됩니다. 
+              이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRestart}>
+              확인
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 처음으로 확인 다이얼로그 */}
+      <AlertDialog open={showHomeDialog} onOpenChange={setShowHomeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>처음으로 돌아가시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              현재 결과가 삭제되고 시작 페이지로 이동합니다. 
+              이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmHome}>
+              확인
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
