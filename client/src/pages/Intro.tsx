@@ -49,7 +49,7 @@ export default function Intro() {
               코치의 나침반
             </h1>
             <p className="text-xl text-muted-foreground">
-              가치 발견 카드 소팅
+              Value Discovery
             </p>
           </div>
 
@@ -111,9 +111,7 @@ export default function Intro() {
           <Card>
             <CardHeader>
               <CardTitle className="text-center">시작하기</CardTitle>
-              <CardDescription className="text-center">
-                결과를 저장하고 이메일로 받아보려면 정보를 입력해주세요.
-              </CardDescription>
+
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
