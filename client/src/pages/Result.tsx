@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Value } from "@/types/values";
-import { Download, Home, RotateCcw, Mail, ChevronDown, ChevronUp } from "lucide-react";
+import { Home, RotateCcw, Copy, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -237,7 +237,7 @@ const REFLECTION_QUESTIONS: Record<string, string[]> = {
 export default function Result() {
   const [, setLocation] = useLocation();
   const [finalValues, setFinalValues] = useState<Value[]>([]);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [showHomeDialog, setShowHomeDialog] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
@@ -285,108 +285,17 @@ export default function Result() {
     }
   }, [setLocation, saveAssessment, isSaved]);
 
-  const handleDownloadPDF = async () => {
-    try {
-      setIsGeneratingPDF(true);
-      toast.info("PDF를 생성하는 중입니다. 잠시만 기다려주세요...");
+  const handleCopyValues = () => {
+    const name = localStorage.getItem("values-name") || "참가자";
+    const text = `${name}님의 핵심 가치
 
-      // html2canvas와 jsPDF 동적 import
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
+${finalValues.map((v, i) => `${i + 1}. ${v.korean} (${v.english})`).join("\n")}
 
-      // PDF 전용 숨겨진 영역 생성
-      const pdfContainer = document.createElement("div");
-      pdfContainer.style.position = "absolute";
-      pdfContainer.style.left = "-9999px";
-      pdfContainer.style.top = "0";
-      pdfContainer.style.width = "800px";
-      pdfContainer.style.backgroundColor = "#ffffff";
-      pdfContainer.style.padding = "40px";
-      pdfContainer.style.fontFamily = "Arial, sans-serif";
+코치의 나침반 · Value Discovery
+${new Date().toLocaleDateString("ko-KR")}`;
 
-      const name = localStorage.getItem("values-name") || "참가자";
-
-      // PDF 내용 생성 (RGB 색상만 사용)
-      pdfContainer.innerHTML = `
-        <div style="text-align: center; margin-bottom: 40px;">
-          <div style="display: inline-block; padding: 8px 16px; background-color: #e0f2fe; border-radius: 20px; margin-bottom: 16px;">
-            <span style="color: #0369a1; font-weight: 600;">🎉 완료!</span>
-          </div>
-          <h1 style="font-size: 32px; font-weight: bold; color: #1a1a1a; margin: 16px 0;">
-            ${name}님의 핵심 가치
-          </h1>
-          <p style="font-size: 18px; color: #6b7280;">
-            이 세 가지 가치가 당신의 삶을 이끄는 나침반입니다.
-          </p>
-        </div>
-
-        ${finalValues.map((value, index) => `
-          <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px;">
-            <div style="margin-bottom: 12px;">
-              <span style="font-size: 24px; font-weight: bold; color: #0c4a6e;">
-                ${index + 1}. ${value.korean}
-              </span>
-              <span style="font-size: 18px; color: #6b7280; margin-left: 12px;">
-                ${value.english}
-              </span>
-            </div>
-            <p style="font-size: 14px; color: #4b5563; margin-bottom: 16px;">
-              ${value.description}
-            </p>
-            <div style="background-color: #ffffff; padding: 16px; border-radius: 4px;">
-              <p style="font-weight: 600; color: #1a1a1a; margin-bottom: 12px;">💭 성찰 질문</p>
-              ${getReflectionQuestions(value.korean).map((q, i) => `
-                <p style="color: #374151; margin-bottom: 8px;">
-                  ${i + 1}. ${q}
-                </p>
-              `).join("")}
-            </div>
-          </div>
-        `).join("")}
-
-        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-          <p style="color: #6b7280; font-size: 14px;">
-            코치의 나침반 · Value Discovery
-          </p>
-          <p style="color: #9ca3af; font-size: 12px; margin-top: 8px;">
-            ${new Date().toLocaleDateString("ko-KR")}
-          </p>
-        </div>
-      `;
-
-      document.body.appendChild(pdfContainer);
-
-      // Canvas로 변환 (고해상도)
-      const canvas = await html2canvas(pdfContainer, {
-        scale: 2,
-        backgroundColor: "#ffffff",
-        logging: false,
-      });
-
-      // PDF 생성
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      pdf.save(`${name}_가치발견결과.pdf`);
-
-      // 임시 요소 제거
-      document.body.removeChild(pdfContainer);
-
-      toast.success("PDF가 성공적으로 다운로드되었습니다!");
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      toast.error("PDF 생성에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsGeneratingPDF(false);
-    }
+    navigator.clipboard.writeText(text);
+    toast.success("가치 목록이 클립보드에 복사되었습니다!");
   };
 
   const handleRestart = () => {
@@ -414,10 +323,7 @@ export default function Result() {
     setLocation("/");
   };
 
-  const handleSendEmail = async () => {
-    toast.info("이메일 발송 기능은 곧 추가될 예정입니다!");
-    // TODO: 이메일 발송 기능 구현
-  };
+
 
   const toggleCard = (id: number) => {
     const newExpanded = new Set(expandedCards);
@@ -536,22 +442,11 @@ export default function Result() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Button
               size="lg"
-              onClick={handleDownloadPDF}
-              disabled={isGeneratingPDF}
+              onClick={handleCopyValues}
               className="gap-2"
             >
-              <Download className="w-5 h-5" />
-              {isGeneratingPDF ? "생성 중..." : "PDF 다운로드"}
-            </Button>
-
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={handleSendEmail}
-              className="gap-2"
-            >
-              <Mail className="w-5 h-5" />
-              이메일 발송
+              <Copy className="w-5 h-5" />
+              복사하기
             </Button>
 
             <Button
