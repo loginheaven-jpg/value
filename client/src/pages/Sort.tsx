@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ValueCard } from "@/components/ValueCard";
 import { Step, STEP_CONFIGS, Value } from "@/types/values";
-import { ArrowLeft, ArrowRight, Home } from "lucide-react";
+import { ArrowLeft, ArrowRight, Home, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -28,6 +28,10 @@ export default function Sort() {
   const [stepHistory, setStepHistory] = useState<Array<{ step: Step; values: Value[]; selected: Set<number> }>>([]);
   const [loading, setLoading] = useState(true);
   const [restored, setRestored] = useState(false);
+  
+  // 슈퍼어드민 체크 (viproject@naver.com)
+  const storedEmail = localStorage.getItem("values-email");
+  const isSuperAdmin = storedEmail === "viproject@naver.com";
 
   // 가치 데이터 로드
   useEffect(() => {
@@ -212,9 +216,24 @@ export default function Sort() {
               <span className="hidden sm:inline">처음으로</span>
             </Button>
             
-            {/* 자동 저장 안내 */}
-            <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
-              💾 자동 저장됨
+            <div className="flex items-center gap-2">
+              {/* 자동 저장 안내 */}
+              <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
+                💾 자동 저장됨
+              </div>
+              
+              {/* 슈퍼어드민 링크 */}
+              {isSuperAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLocation("/admin")}
+                  className="gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:inline">관리자메뉴</span>
+                </Button>
+              )}
             </div>
           </div>
 

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Compass, Heart, Lightbulb, Target } from "lucide-react";
+import { Compass, Heart, Lightbulb, Target, Settings } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -11,6 +11,10 @@ export default function Intro() {
   const [, setLocation] = useLocation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  
+  // 슈퍼어드민 체크 (viproject@naver.com)
+  const storedEmail = localStorage.getItem("values-email");
+  const isSuperAdmin = storedEmail === "viproject@naver.com";
 
   const handleStart = () => {
     // 이름 유효성 검증
@@ -34,6 +38,20 @@ export default function Intro() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
+      {/* 슈퍼어드민 링크 */}
+      {isSuperAdmin && (
+        <div className="fixed top-4 right-4 z-50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLocation("/admin")}
+            className="gap-2 bg-background/80 backdrop-blur-sm"
+          >
+            <Settings className="w-4 h-4" />
+            관리자메뉴
+          </Button>
+        </div>
+      )}
       <div className="container max-w-4xl">
         <div className="text-center space-y-6 mb-12">
           {/* 로고 아이콘 */}

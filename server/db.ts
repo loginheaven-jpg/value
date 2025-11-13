@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, valuesAssessments, InsertValuesAssessment } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -111,7 +111,7 @@ export async function getAllValuesAssessments() {
     throw new Error("Database not available");
   }
 
-  return await db.select().from(valuesAssessments).orderBy(valuesAssessments.createdAt);
+  return await db.select().from(valuesAssessments).orderBy(desc(valuesAssessments.createdAt));
 }
 
 /**

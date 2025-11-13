@@ -74,7 +74,7 @@ export default function Admin() {
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold text-primary">
-                  {assessments?.filter((a) => {
+                  {assessments?.filter((a: any) => {
                     const today = new Date();
                     const createdAt = new Date(a.createdAt);
                     return (
@@ -96,7 +96,7 @@ export default function Admin() {
                   {assessments && assessments.length > 0
                     ? (() => {
                         const valueCounts: Record<string, number> = {};
-                        assessments.forEach((a) => {
+                        assessments.forEach((a: any) => {
                           valueCounts[a.value1] = (valueCounts[a.value1] || 0) + 1;
                           valueCounts[a.value2] = (valueCounts[a.value2] || 0) + 1;
                           valueCounts[a.value3] = (valueCounts[a.value3] || 0) + 1;
@@ -154,7 +154,7 @@ export default function Admin() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredAssessments.map((assessment) => (
+                      {filteredAssessments.map((assessment: any) => (
                         <TableRow key={assessment.id}>
                           <TableCell className="whitespace-nowrap">
                             {new Date(assessment.createdAt).toLocaleDateString("ko-KR", {

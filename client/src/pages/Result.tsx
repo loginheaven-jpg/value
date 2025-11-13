@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Value } from "@/types/values";
-import { Home, RotateCcw, Copy, ChevronDown, ChevronUp } from "lucide-react";
+import { Home, RotateCcw, Copy, ChevronDown, ChevronUp, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -241,33 +241,37 @@ export default function Result() {
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [showHomeDialog, setShowHomeDialog] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
-  const [isSaved, setIsSaved] = useState(false);
+  
+  // 슈퍼어드민 체크 (viproject@naver.com)
+  const storedEmail = localStorage.getItem("values-email");
+  const isSuperAdmin = storedEmail === "viproject@naver.com";
 
   // tRPC mutation
   const saveAssessment = trpc.values.save.useMutation();
 
   useEffect(() => {
-    const stored = localStorage.getItem("final-values");
-    if (stored) {
+    const saved = localStorage.getItem("values-final");
+    if (saved) {
       try {
-        const values = JSON.parse(stored);
-        setFinalValues(values);
+        const parsed = JSON.parse(saved);
+        setFinalValues(parsed);
 
-        // 자동 저장 (한 번만)
-        if (!isSaved) {
+        // 결과 페이지 진입 시 자동 DB 저장 (한 번만)
+        const savedFlag = sessionStorage.getItem("values-saved-to-db");
+        if (!savedFlag) {
           const name = localStorage.getItem("values-name");
           const email = localStorage.getItem("values-email");
 
-          if (name && email && values.length === 3) {
+          if (name && email && parsed.length === 3) {
             saveAssessment.mutate({
               name,
               email,
-              value1: values[0].korean,
-              value2: values[1].korean,
-              value3: values[2].korean,
+              value1: parsed[0].korean,
+              value2: parsed[1].korean,
+              value3: parsed[2].korean,
             }, {
               onSuccess: () => {
-                setIsSaved(true);
+                sessionStorage.setItem("values-saved-to-db", "true");
                 console.log("결과가 자동으로 저장되었습니다.");
               },
               onError: (error) => {
@@ -283,7 +287,7 @@ export default function Result() {
     } else {
       setLocation("/");
     }
-  }, [setLocation, saveAssessment, isSaved]);
+  }, [setLocation, saveAssessment]);
 
   const handleCopyValues = () => {
     const name = localStorage.getItem("values-name") || "참가자";
@@ -307,6 +311,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
     localStorage.removeItem("final-values");
     localStorage.removeItem("values-name");
     localStorage.removeItem("values-email");
+    sessionStorage.removeItem("values-saved-to-db");
     setLocation("/");
     toast.success("처음부터 다시 시작합니다.");
   };
@@ -320,6 +325,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
     localStorage.removeItem("final-values");
     localStorage.removeItem("values-name");
     localStorage.removeItem("values-email");
+    sessionStorage.removeItem("values-saved-to-db");
     setLocation("/");
   };
 
@@ -347,6 +353,20 @@ ${new Date().toLocaleDateString("ko-KR")}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* 슈퍼어드민 링크 */}
+      {isSuperAdmin && (
+        <div className="fixed top-4 right-4 z-50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLocation("/admin")}
+            className="gap-2 bg-background/80 backdrop-blur-sm"
+          >
+            <Settings className="w-4 h-4" />
+            관리자메뉴
+          </Button>
+        </div>
+      )}
       <div className="container py-12">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* 축하 메시지 */}
