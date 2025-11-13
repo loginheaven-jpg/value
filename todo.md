@@ -146,3 +146,13 @@
 - [x] localStorage 키 통일 (user-name, user-email)
 - [ ] 관리자 화면에 데이터가 저장되지 않는 문제 해결
 - [ ] 결과 화면에서 처음으로/다시하기 버튼 React 에러 수정
+
+## Phase 20: 근본 원인 파악 및 해결 (진행 중)
+- [x] 브라우저 개발자 도구로 실시간 디버깅 (콘솔, Network 탭)
+- [x] Result.tsx에서 슈퍼어드민 체크를 useEffect로 이동
+- [x] localStorage 키를 user-email로 수정
+- [x] alert를 console.log로 변경
+- [ ] DB 저장 실패 근본 원인 파악 (API 호출 여부, 에러 메시지)
+- [ ] Result.tsx useEffect 실행 여부 확인
+- [ ] 처음으로/다시하기 버튼 React 에러 근본 원인 파악
+- [x] 로컬 환경 마이그레이션 가이드 작성 (LOCAL_SETUP_GUIDE.md)

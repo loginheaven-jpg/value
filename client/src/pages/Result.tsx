@@ -243,14 +243,20 @@ export default function Result() {
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   
   // 슈퍼어드민 체크 (viproject@naver.com)
-  const storedEmail = localStorage.getItem("values-email");
-  const isSuperAdmin = storedEmail === "viproject@naver.com";
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("user-email");
+    setIsSuperAdmin(storedEmail === "viproject@naver.com");
+  }, []);
 
   // tRPC mutation
   const saveAssessment = trpc.values.save.useMutation();
 
   useEffect(() => {
+    console.log('[DEBUG] Result useEffect 실행!');
     const saved = localStorage.getItem("values-final");
+    console.log('[DEBUG] saved:', saved);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
