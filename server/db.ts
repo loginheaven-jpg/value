@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, valuesAssessments, InsertValuesAssessment } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -124,4 +124,28 @@ export async function getValuesAssessmentsByEmail(email: string) {
   }
 
   return await db.select().from(valuesAssessments).where(eq(valuesAssessments.email, email));
+}
+
+/**
+ * Delete a single values assessment by ID
+ */
+export async function deleteValuesAssessment(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  return await db.delete(valuesAssessments).where(eq(valuesAssessments.id, id));
+}
+
+/**
+ * Delete multiple values assessments by IDs
+ */
+export async function deleteValuesAssessments(ids: number[]) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  return await db.delete(valuesAssessments).where(inArray(valuesAssessments.id, ids));
 }

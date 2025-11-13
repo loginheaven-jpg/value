@@ -308,7 +308,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
 
   const confirmRestart = () => {
     localStorage.removeItem("values-progress");
-    localStorage.removeItem("final-values");
+    localStorage.removeItem("values-final");
     localStorage.removeItem("values-name");
     localStorage.removeItem("values-email");
     sessionStorage.removeItem("values-saved-to-db");
@@ -322,7 +322,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
 
   const confirmHome = () => {
     localStorage.removeItem("values-progress");
-    localStorage.removeItem("final-values");
+    localStorage.removeItem("values-final");
     localStorage.removeItem("values-name");
     localStorage.removeItem("values-email");
     sessionStorage.removeItem("values-saved-to-db");

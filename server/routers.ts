@@ -3,7 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { saveValuesAssessment, getAllValuesAssessments, getValuesAssessmentsByEmail } from "./db";
+import { saveValuesAssessment, getAllValuesAssessments, getValuesAssessmentsByEmail, deleteValuesAssessment, deleteValuesAssessments } from "./db";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -52,6 +52,26 @@ export const appRouter = router({
       .input(z.object({ email: z.string().email() }))
       .query(async ({ input }) => {
         return await getValuesAssessmentsByEmail(input.email);
+      }),
+
+    /**
+     * Delete a single assessment (admin)
+     */
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteValuesAssessment(input.id);
+        return { success: true };
+      }),
+
+    /**
+     * Delete multiple assessments (admin)
+     */
+    deleteMany: publicProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        await deleteValuesAssessments(input.ids);
+        return { success: true };
       }),
   }),
 });

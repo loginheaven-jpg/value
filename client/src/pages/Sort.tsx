@@ -149,7 +149,7 @@ export default function Sort() {
     if (currentStep === 4) {
       // 최종 결과 페이지로 이동
       const finalValues = allValues.filter((v) => selectedIds.has(v.id));
-      localStorage.setItem("final-values", JSON.stringify(finalValues));
+      localStorage.setItem("values-final", JSON.stringify(finalValues));
       // 진행 상황 삭제 (완료했으므로)
       localStorage.removeItem("values-progress");
       setLocation("/result");
