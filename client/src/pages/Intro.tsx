@@ -15,8 +15,8 @@ export default function Intro() {
   
   // localStorage에서 저장된 이메일/이름 복원 및 슈퍼어드민 체크
   useEffect(() => {
-    const storedName = localStorage.getItem("values-name");
-    const storedEmail = localStorage.getItem("values-email");
+    const storedName = localStorage.getItem("user-name");
+    const storedEmail = localStorage.getItem("user-email");
     
     if (storedName) setName(storedName);
     if (storedEmail) {
@@ -39,8 +39,8 @@ export default function Intro() {
     }
 
     // 이름과 이메일을 로컬 스토리지에 저장
-    localStorage.setItem("values-name", name.trim());
-    localStorage.setItem("values-email", email);
+    localStorage.setItem("user-name", name.trim());
+    localStorage.setItem("user-email", email);
     
     setLocation("/sort");
   };

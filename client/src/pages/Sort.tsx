@@ -30,7 +30,7 @@ export default function Sort() {
   const [restored, setRestored] = useState(false);
   
   // 슈퍼어드민 체크 (viproject@naver.com)
-  const storedEmail = localStorage.getItem("values-email");
+  const storedEmail = localStorage.getItem("user-email");
   const isSuperAdmin = storedEmail === "viproject@naver.com";
 
   // 가치 데이터 로드

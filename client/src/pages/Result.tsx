@@ -258,11 +258,24 @@ export default function Result() {
 
         // 결과 페이지 진입 시 자동 DB 저장 (한 번만)
         const savedFlag = sessionStorage.getItem("values-saved-to-db");
+        console.log("[DEBUG] savedFlag:", savedFlag);
+        console.log("[DEBUG] parsed.length:", parsed.length);
+        console.log("[DEBUG] parsed:", parsed);
+        
         if (!savedFlag) {
-          const name = localStorage.getItem("values-name");
-          const email = localStorage.getItem("values-email");
+          const name = localStorage.getItem("user-name");
+          const email = localStorage.getItem("user-email");
+          console.log("[DEBUG] name:", name);
+          console.log("[DEBUG] email:", email);
 
           if (name && email && parsed.length === 3) {
+            console.log("[DEBUG] DB 저장 시도:", {
+              name,
+              email,
+              value1: parsed[0].korean,
+              value2: parsed[1].korean,
+              value3: parsed[2].korean,
+            });
             saveAssessment.mutate({
               name,
               email,
@@ -278,7 +291,11 @@ export default function Result() {
                 console.error("저장 실패:", error);
               },
             });
+          } else {
+            console.log("[DEBUG] DB 저장 조건 불충족");
           }
+        } else {
+          console.log("[DEBUG] 이미 저장됨");
         }
       } catch (e) {
         console.error("Failed to parse final values:", e);
@@ -289,9 +306,7 @@ export default function Result() {
     }
   }, [setLocation, saveAssessment]);
 
-  const handleCopyValues = () => {
-    const name = localStorage.getItem("values-name") || "참가자";
-    const text = `${name}님의 핵심 가치
+  const handleCopyValues = () => {    const name = localStorage.getItem("user-name") || "참가자";    const text = `${name}님의 핵심 가치
 
 ${finalValues.map((v, i) => `${i + 1}. ${v.korean} (${v.english})`).join("\n")}
 
@@ -311,12 +326,8 @@ ${new Date().toLocaleDateString("ko-KR")}`;
     localStorage.removeItem("values-progress");
     localStorage.removeItem("values-final");
     sessionStorage.removeItem("values-saved-to-db");
-    setShowRestartDialog(false);
-    // 약간의 딸레이 후 이동 (다이얼로그 닫힌 후)
-    setTimeout(() => {
-      setLocation("/sort");
-      toast.success("다시 시작합니다.");
-    }, 100);
+    // 즉시 페이지 이동 (다이얼로그 상태는 자동으로 unmount됨)
+    setLocation("/sort");
   };
 
   const handleHome = () => {
@@ -327,15 +338,11 @@ ${new Date().toLocaleDateString("ko-KR")}`;
     // 처음으로: 모든 데이터 삭제
     localStorage.removeItem("values-progress");
     localStorage.removeItem("values-final");
-    localStorage.removeItem("values-name");
-    localStorage.removeItem("values-email");
+    localStorage.removeItem("user-name");
+    localStorage.removeItem("user-email");
     sessionStorage.removeItem("values-saved-to-db");
-    setShowHomeDialog(false);
-    // 약간의 딸레이 후 이동 (다이얼로그 닫힌 후)
-    setTimeout(() => {
-      setLocation("/");
-      toast.success("처음으로 돌아갑니다.");
-    }, 100);
+    // 즉시 페이지 이동 (다이얼로그 상태는 자동으로 unmount됨)
+    setLocation("/");
   };
 
 
@@ -358,7 +365,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
     return null;
   }
 
-  const name = localStorage.getItem("values-name") || "참가자";
+  const name = localStorage.getItem("user-name") || "참가자";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
