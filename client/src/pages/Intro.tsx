@@ -1,12 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Compass, Heart, Lightbulb, Target } from "lucide-react";
+import { useState } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 export default function Intro() {
   const [, setLocation] = useLocation();
+  const [email, setEmail] = useState("");
 
   const handleStart = () => {
+    // 이메일 유효성 검증
+    if (!email || !email.includes("@")) {
+      toast.error("올바른 이메일 주소를 입력해주세요.");
+      return;
+    }
+
+    // 이메일을 로컬 스토리지에 저장
+    localStorage.setItem("values-email", email);
+    
     setLocation("/sort");
   };
 
@@ -84,16 +98,42 @@ export default function Intro() {
           </Card>
         </div>
 
-        {/* 시작 버튼 */}
-        <div className="text-center space-y-4">
-          <Button
-            size="lg"
-            onClick={handleStart}
-            className="text-lg px-8 py-6 h-auto"
-          >
-            가치 발견 시작하기
-          </Button>
-          <p className="text-sm text-muted-foreground">
+        {/* 이메일 입력 및 시작 버튼 */}
+        <div className="max-w-md mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center">시작하기</CardTitle>
+              <CardDescription className="text-center">
+                결과를 저장하고 이메일로 받아보려면 이메일 주소를 입력해주세요.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">이메일 주소</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleStart();
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                size="lg"
+                onClick={handleStart}
+                className="w-full text-lg py-6 h-auto"
+              >
+                가치 발견 시작하기
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <p className="text-sm text-muted-foreground text-center">
             소요 시간: 약 10-15분
           </p>
         </div>

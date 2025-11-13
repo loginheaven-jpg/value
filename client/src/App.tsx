@@ -9,6 +9,7 @@ import Sort from "./pages/Sort";
 import Result from "./pages/Result";
 
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Intro} />

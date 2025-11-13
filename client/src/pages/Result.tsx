@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Value } from "@/types/values";
-import { Download, Home, RotateCcw, Copy, ChevronDown, ChevronUp } from "lucide-react";
+import { Download, Home, RotateCcw, Copy, ChevronDown, ChevronUp, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 // 가치별 성찰 질문 매핑 (세미나 스크립트 기반)
 const REFLECTION_QUESTIONS: Record<string, string[]> = {
@@ -202,6 +203,10 @@ export default function Result() {
   const [finalValues, setFinalValues] = useState<Value[]>([]);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+  const [isSaved, setIsSaved] = useState(false);
+
+  // tRPC mutation
+  const saveValuesMutation = trpc.values.save.useMutation();
 
   useEffect(() => {
     const saved = localStorage.getItem("final-values");
@@ -371,6 +376,37 @@ export default function Result() {
     return REFLECTION_QUESTIONS[korean] || REFLECTION_QUESTIONS["default"];
   };
 
+  const handleSaveToServer = async () => {
+    try {
+      const email = localStorage.getItem("values-email");
+      
+      if (!email) {
+        toast.error("이메일 정보를 찾을 수 없습니다. 처음부터 다시 시작해주세요.");
+        return;
+      }
+
+      if (finalValues.length !== 3) {
+        toast.error("3개의 가치가 선택되지 않았습니다.");
+        return;
+      }
+
+      toast.info("결과를 저장하는 중입니다...");
+
+      await saveValuesMutation.mutateAsync({
+        email,
+        value1: finalValues[0].korean,
+        value2: finalValues[1].korean,
+        value3: finalValues[2].korean,
+      });
+
+      setIsSaved(true);
+      toast.success("결과가 성공적으로 저장되었습니다! 이메일로 결과를 확인하세요.");
+    } catch (error) {
+      console.error("Failed to save values:", error);
+      toast.error("저장에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
   if (finalValues.length === 0) {
     return null;
   }
@@ -515,6 +551,17 @@ export default function Result() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Button
               size="lg"
+              onClick={handleSaveToServer}
+              disabled={saveValuesMutation.isPending || isSaved}
+              className="gap-2"
+            >
+              <Save className="w-5 h-5" />
+              {saveValuesMutation.isPending ? "저장 중..." : isSaved ? "저장 완료" : "결과 저장"}
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
               onClick={handleDownloadPDF}
               disabled={isGeneratingPDF}
               className="gap-2"
