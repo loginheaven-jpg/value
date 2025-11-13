@@ -307,13 +307,16 @@ ${new Date().toLocaleDateString("ko-KR")}`;
   };
 
   const confirmRestart = () => {
+    // 다시하기: 이름/이메일은 유지, 진단 데이터만 삭제
     localStorage.removeItem("values-progress");
     localStorage.removeItem("values-final");
-    localStorage.removeItem("values-name");
-    localStorage.removeItem("values-email");
     sessionStorage.removeItem("values-saved-to-db");
-    setLocation("/");
-    toast.success("처음부터 다시 시작합니다.");
+    setShowRestartDialog(false);
+    // 약간의 딸레이 후 이동 (다이얼로그 닫힌 후)
+    setTimeout(() => {
+      setLocation("/sort");
+      toast.success("다시 시작합니다.");
+    }, 100);
   };
 
   const handleHome = () => {
@@ -321,12 +324,18 @@ ${new Date().toLocaleDateString("ko-KR")}`;
   };
 
   const confirmHome = () => {
+    // 처음으로: 모든 데이터 삭제
     localStorage.removeItem("values-progress");
     localStorage.removeItem("values-final");
     localStorage.removeItem("values-name");
     localStorage.removeItem("values-email");
     sessionStorage.removeItem("values-saved-to-db");
-    setLocation("/");
+    setShowHomeDialog(false);
+    // 약간의 딸레이 후 이동 (다이얼로그 닫힌 후)
+    setTimeout(() => {
+      setLocation("/");
+      toast.success("처음으로 돌아갑니다.");
+    }, 100);
   };
 
 
@@ -498,7 +507,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
           <AlertDialogHeader>
             <AlertDialogTitle>다시 시작하시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription>
-              현재 진행 상황과 결과가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.
+              진단 결과가 삭제되고 카드 선택부터 다시 시작합니다. (이름과 이메일은 유지됩니다)
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -516,7 +525,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
           <AlertDialogHeader>
             <AlertDialogTitle>처음으로 돌아가시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription>
-              현재 진행 상황과 결과가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.
+              모든 데이터(이름, 이메일, 진단 결과)가 삭제되고 처음부터 시작합니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
