@@ -310,7 +310,8 @@ export default function Result() {
     } else {
       setLocation("/");
     }
-  }, [setLocation, saveAssessment]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setLocation]);
 
   const handleCopyValues = () => {    const name = localStorage.getItem("user-name") || "참가자";    const text = `${name}님의 핵심 가치
 
