@@ -282,6 +282,8 @@ export default function Result() {
               value2: parsed[1].korean,
               value3: parsed[2].korean,
             });
+            // 중복 저장 방지를 위해 mutation 호출 직후 즉시 플래그 설정
+            sessionStorage.setItem("values-saved-to-db", "true");
             saveAssessment.mutate({
               name,
               email,
@@ -290,11 +292,12 @@ export default function Result() {
               value3: parsed[2].korean,
             }, {
               onSuccess: () => {
-                sessionStorage.setItem("values-saved-to-db", "true");
                 console.log("결과가 자동으로 저장되었습니다.");
               },
               onError: (error) => {
                 console.error("저장 실패:", error);
+                // 실패 시 플래그 제거하여 재시도 가능하게 함
+                sessionStorage.removeItem("values-saved-to-db");
               },
             });
           } else {
@@ -311,7 +314,7 @@ export default function Result() {
       setLocation("/");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLocation]);
+  }, []);
 
   const handleCopyValues = () => {    const name = localStorage.getItem("user-name") || "참가자";    const text = `${name}님의 핵심 가치
 

@@ -33,8 +33,15 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        await saveValuesAssessment(input);
-        return { success: true };
+        console.log('[SERVER] values.save mutation 호출됨:', input);
+        try {
+          const result = await saveValuesAssessment(input);
+          console.log('[SERVER] DB 저장 성공:', result);
+          return { success: true };
+        } catch (error) {
+          console.error('[SERVER] DB 저장 실패:', error);
+          throw error;
+        }
       }),
 
     /**

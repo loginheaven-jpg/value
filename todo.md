@@ -178,3 +178,11 @@
 - [x] DB 저장 API 414 에러 (URI Too Long) 해결 (무한 루프 해결로 자동 해결)
 - [x] 처음으로 버튼 클릭 시 React #185 에러 해결 (무한 루프 해결로 자동 해결)
 - [x] 최종 테스트 및 체크포인트 저장
+
+## Phase 24: 긴급 버그 수정 - Result.tsx 무한 DB 저장 문제 (완료)
+- [x] Result.tsx DB 저장 로직 분석 (useEffect 의존성 배열 확인)
+- [x] sessionStorage 플래그 동작 확인
+- [x] 무한 저장 원인 파악 및 수정 (useEffect 의존성 배열을 빈 배열로 변경 + sessionStorage 플래그 즉시 설정)
+- [x] 중복 데이터 삭제 (64,449개 SQL DELETE)
+- [x] 테스트: 결과 페이지 진입 시 1회만 저장되는지 확인 (성공)
+- [x] 체크포인트 저장
