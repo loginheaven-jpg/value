@@ -6,6 +6,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Intro from "./pages/Intro";
 import Sort from "./pages/Sort";
+import PairwiseComparison from "./pages/PairwiseComparison";
+import FinalSelection from "./pages/FinalSelection";
 import Result from "./pages/Result";
 import Admin from "./pages/Admin";
 
@@ -15,9 +17,11 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Intro} />
       <Route path={"/sort"} component={Sort} />
+      <Route path={"/step4"} component={PairwiseComparison} />
+      <Route path={"/step5"} component={FinalSelection} />
       <Route path={"/result"} component={Result} />
       <Route path={"/admin"} component={Admin} />
-      <Route path={"/ 404"} component={NotFound} />
+      <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

@@ -146,13 +146,13 @@ export default function Sort() {
       return;
     }
 
-    if (currentStep === 4) {
-      // 최종 결과 페이지로 이동
-      const finalValues = allValues.filter((v) => selectedIds.has(v.id));
-      localStorage.setItem("values-final", JSON.stringify(finalValues));
-      // 진행 상황 삭제 (완료했으므로)
+    if (currentStep === 3) {
+      // Step3 완료 - 5개 선택 완료, 쌍대비교 페이지로
+      const selectedValues = allValues.filter((v) => selectedIds.has(v.id));
+      localStorage.setItem("values-step3", JSON.stringify(selectedValues));
+      // 진행 상황 삭제 (쌍대비교로 넘어가므로)
       localStorage.removeItem("values-progress");
-      setLocation("/result");
+      setLocation("/step4");
     } else {
       // 현재 상태를 히스토리에 저장
       setStepHistory([...stepHistory, {
