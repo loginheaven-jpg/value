@@ -10,6 +10,7 @@ import PairwiseComparison from "./pages/PairwiseComparison";
 import FinalSelection from "./pages/FinalSelection";
 import Result from "./pages/Result";
 import Admin from "./pages/Admin";
+import MyResults from "./pages/MyResults";
 
 function Router() {
   // make sure to consider if you need authenticatiofunction Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path={"/step5"} component={FinalSelection} />
       <Route path={"/result"} component={Result} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/my-results"} component={MyResults} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Value } from "@/types/values";
-import { Home, RotateCcw, Copy, ChevronDown, ChevronUp, Settings } from "lucide-react";
+import { Home, RotateCcw, Copy, ChevronDown, ChevronUp, Settings, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -493,6 +493,16 @@ ${new Date().toLocaleDateString("ko-KR")}`;
             >
               <Copy className="w-5 h-5" />
               복사하기
+            </Button>
+
+            <Button
+              size="lg"
+              variant="default"
+              onClick={() => setLocation("/my-results")}
+              className="gap-2"
+            >
+              <History className="w-5 h-5" />
+              내 결과 보기
             </Button>
 
             <Button

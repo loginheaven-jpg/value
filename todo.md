@@ -204,3 +204,17 @@
 - [x] localStorage 키 추가 (pairwise-results, sorted-values)
 - [x] 브라우저 테스트 (전체 플로우 검증)
 - [x] 체크포인트 저장
+
+## Phase 26: 내 결과 보기 기능 구현 (완료)
+- [x] tRPC API 확인: `values.getByEmail(email)` 이미 존재
+- [x] MyResults.tsx 페이지 생성
+  - [x] 로그인한 사용자의 이메일로 결과 조회
+  - [x] 결과 목록 테이블 (날짜, 이름, 가치1, 가치2, 가치3)
+  - [x] 각 결과 클릭 시 상세 보기 (확장)
+  - [x] "새로운 진단 시작" 버튼
+  - [x] 결과가 없을 경우 안내 메시지
+- [x] App.tsx에 라우팅 추가 (/my-results)
+- [x] Result.tsx에 "내 결과 보기" 버튼 추가
+- [x] Intro.tsx에 "이전 결과 보기" 링크 추가 (이메일 입력 시 표시)
+- [x] 브라우저 테스트 (전체 플로우)
+- [x] 체크포인트 저장

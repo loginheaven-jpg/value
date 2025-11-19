@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Compass, Heart, Lightbulb, Target, Settings } from "lucide-react";
+import { Compass, Heart, Lightbulb, Target, Settings, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -180,6 +180,18 @@ export default function Intro() {
               >
                 가치 발견 시작하기
               </Button>
+              
+              {email && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setLocation("/my-results")}
+                  className="w-full gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <History className="w-4 h-4" />
+                  이전 결과 보기
+                </Button>
+              )}
             </CardContent>
           </Card>
           
