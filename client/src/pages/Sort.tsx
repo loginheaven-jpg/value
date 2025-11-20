@@ -249,7 +249,7 @@ export default function Sort() {
             </p>
             <div className="flex items-center justify-center gap-4 text-sm">
               <span className="text-foreground font-medium">
-                선택됨: <span className="text-primary text-lg font-bold">{selectedIds.size}</span> / {config.to}
+                선택됨: <span className="text-primary text-2xl font-bold">{selectedIds.size}</span> / {config.to}
               </span>
             </div>
           </div>
