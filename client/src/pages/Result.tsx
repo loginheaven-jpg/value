@@ -242,7 +242,7 @@ export default function Result() {
   const [finalValues, setFinalValues] = useState<Value[]>([]);
 
   const [showRestartDialog, setShowRestartDialog] = useState(false);
-  const [showHomeDialog, setShowHomeDialog] = useState(false);
+
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   
   // 커스텀 가치 추가 관련 state
@@ -346,12 +346,68 @@ export default function Result() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCopyValues = () => {    const name = localStorage.getItem("user-name") || "참가자";    const text = `${name}님의 핵심 가치
+  // DB 저장 함수 (재사용 가능)
+  const saveToDatabase = (values?: Value[]) => {
+    const valuesToSave = values || finalValues;
+    const name = localStorage.getItem("user-name");
+    const email = localStorage.getItem("user-email");
+    
+    if (!name || !email || valuesToSave.length !== 3) {
+      console.log("[DEBUG] DB 저장 조건 불충족");
+      return Promise.resolve();
+    }
 
-${finalValues.map((v, i) => `${i + 1}. ${v.korean} (${v.english})`).join("\n")}
+    // 커스텀 가치 확인
+    let customValue: string | undefined = undefined;
+    const customValueResult = localStorage.getItem("custom-value-result");
+    if (customValueResult) {
+      customValue = customValueResult;
+    } else {
+      const customValueData = localStorage.getItem("custom-value-step3");
+      if (customValueData) {
+        try {
+          const customData = JSON.parse(customValueData);
+          customValue = customData.korean;
+        } catch (e) {
+          console.error("Failed to parse custom value:", e);
+        }
+      }
+    }
 
-코치의 나침반 · Value Discovery
-${new Date().toLocaleDateString("ko-KR")}`;
+    console.log("[DEBUG] DB 저장 시도", {
+      name,
+      email,
+      value1: valuesToSave[0].korean,
+      value2: valuesToSave[1].korean,
+      value3: valuesToSave[2].korean,
+      customValue,
+    });
+
+    return new Promise<void>((resolve, reject) => {
+      saveAssessment.mutate({
+        name,
+        email,
+        value1: valuesToSave[0].korean,
+        value2: valuesToSave[1].korean,
+        value3: valuesToSave[2].korean,
+        customValue,
+      }, {
+        onSuccess: () => {
+          console.log("결과가 저장되었습니다.");
+          sessionStorage.setItem("values-saved-to-db", "true");
+          resolve();
+        },
+        onError: (error) => {
+          console.error("저장 실패:", error);
+          reject(error);
+        },
+      });
+    });
+  };
+
+  const handleCopyValues = () => {
+    const name = localStorage.getItem("user-name") || "참가자";
+    const text = `${name}님의 핵심 가치\n\n${finalValues.map((v, i) => `${i + 1}. ${v.korean} (${v.english})`).join("\n")}\n\n코치의 나침반 · Value Discovery\n${new Date().toLocaleDateString("ko-KR")}`;
 
     navigator.clipboard.writeText(text);
     toast.success("가치 목록이 클립보드에 복사되었습니다!");
@@ -370,20 +426,19 @@ ${new Date().toLocaleDateString("ko-KR")}`;
     setLocation("/sort");
   };
 
-  const handleHome = () => {
-    setShowHomeDialog(true);
-  };
-
-  const confirmHome = () => {
-    // 처음으로: 모든 데이터 삭제
-    localStorage.removeItem("values-progress");
-    localStorage.removeItem("values-final");
-    localStorage.removeItem("user-name");
-    localStorage.removeItem("user-email");
-    sessionStorage.removeItem("values-saved-to-db");
-    // 즉시 페이지 이동 (다이얼로그 상태는 자동으로 unmount됨)
+  const handleHome = async () => {
+    // 처음으로: 저장 후 이동 (다이얼로그 없이)
+    try {
+      await saveToDatabase();
+      toast.success("결과가 저장되었습니다.");
+    } catch (error) {
+      console.error("저장 실패:", error);
+      // 저장 실패해도 계속 진행
+    }
     setLocation("/");
   };
+
+
 
 
 
@@ -437,7 +492,15 @@ ${new Date().toLocaleDateString("ko-KR")}`;
     setCustomValue("");
     setSelectedValueIndex(null);
 
-    toast.success("가치가 성공적으로 교체되었습니다! 페이지를 새로고침하면 DB에 저장됩니다.");
+    // 즉시 DB 저장 (newFinalValues 전달)
+    saveToDatabase(newFinalValues)
+      .then(() => {
+        toast.success("가치가 성공적으로 교체되고 저장되었습니다!");
+      })
+      .catch((error) => {
+        console.error("저장 실패:", error);
+        toast.error("저장에 실패했습니다. 다시 시도해주세요.");
+      });
   };
 
   if (finalValues.length === 0) {
@@ -633,7 +696,15 @@ ${new Date().toLocaleDateString("ko-KR")}`;
             <Button
               size="lg"
               variant="default"
-              onClick={() => setLocation("/my-results")}
+              onClick={async () => {
+                try {
+                  await saveToDatabase();
+                  toast.success("결과가 저장되었습니다.");
+                } catch (error) {
+                  console.error("저장 실패:", error);
+                }
+                setLocation("/my-results");
+              }}
               className="gap-2"
             >
               <History className="w-5 h-5" />
@@ -681,23 +752,7 @@ ${new Date().toLocaleDateString("ko-KR")}`;
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 처음으로 확인 다이얼로그 */}
-      <AlertDialog open={showHomeDialog} onOpenChange={setShowHomeDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>처음으로 돌아가시겠습니까?</AlertDialogTitle>
-            <AlertDialogDescription>
-              모든 데이터(이름, 이메일, 진단 결과)가 삭제되고 처음부터 시작합니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmHome}>
-              확인
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
     </div>
   );
 }
