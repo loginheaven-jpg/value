@@ -1,0 +1,1 @@
+ALTER TABLE `values_assessments` ADD `customValue` varchar(100);

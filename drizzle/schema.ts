@@ -36,6 +36,7 @@ export const valuesAssessments = mysqlTable("values_assessments", {
   value1: varchar("value1", { length: 100 }).notNull(),
   value2: varchar("value2", { length: 100 }).notNull(),
   value3: varchar("value3", { length: 100 }).notNull(),
+  customValue: varchar("customValue", { length: 100 }), // 사용자가 추가한 커스텀 가치 (선택적)
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

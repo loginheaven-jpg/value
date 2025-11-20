@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -242,6 +245,11 @@ export default function Result() {
   const [showHomeDialog, setShowHomeDialog] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   
+  // 커스텀 가치 추가 관련 state
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState("");
+  const [selectedValueIndex, setSelectedValueIndex] = useState<number | null>(null);
+  
   // 슈퍼어드민 체크 (viproject@naver.com)
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   
@@ -275,12 +283,33 @@ export default function Result() {
           console.log("[DEBUG] email:", email);
 
           if (name && email && parsed.length === 3) {
-            console.log("[DEBUG] DB 저장 시도:", {
+             // 커스텀 가치 확인 (localStorage에서)
+            let customValue: string | undefined = undefined;
+            
+            // Result.tsx에서 교체한 경우
+            const customValueResult = localStorage.getItem("custom-value-result");
+            if (customValueResult) {
+              customValue = customValueResult;
+            } else {
+              // Step 3에서 추가한 경우
+              const customValueData = localStorage.getItem("custom-value-step3");
+              if (customValueData) {
+                try {
+                  const customData = JSON.parse(customValueData);
+                  customValue = customData.korean;
+                } catch (e) {
+                  console.error("Failed to parse custom value:", e);
+                }
+              }
+            }
+            
+            console.log("[DEBUG] DB 저장 시도", {
               name,
               email,
               value1: parsed[0].korean,
               value2: parsed[1].korean,
               value3: parsed[2].korean,
+              customValue,
             });
             // 중복 저장 방지를 위해 mutation 호출 직후 즉시 플래그 설정
             sessionStorage.setItem("values-saved-to-db", "true");
@@ -290,6 +319,7 @@ export default function Result() {
               value1: parsed[0].korean,
               value2: parsed[1].korean,
               value3: parsed[2].korean,
+              customValue,
             }, {
               onSuccess: () => {
                 console.log("결과가 자동으로 저장되었습니다.");
@@ -369,6 +399,45 @@ ${new Date().toLocaleDateString("ko-KR")}`;
 
   const getReflectionQuestions = (korean: string): string[] => {
     return REFLECTION_QUESTIONS[korean] || REFLECTION_QUESTIONS["default"];
+  };
+
+  const handleReplaceValue = () => {
+    if (!customValue.trim()) {
+      toast.error("가치를 입력해주세요.");
+      return;
+    }
+    if (selectedValueIndex === null) {
+      toast.error("교체할 가치를 선택해주세요.");
+      return;
+    }
+
+    // 새로운 커스텀 가치 객체 생성
+    const newCustomValue: Value = {
+      id: 1000, // 커스텀 ID
+      korean: customValue.trim(),
+      english: "Custom",
+      description: "나만의 가치",
+      category: "커스텀"
+    };
+
+    // finalValues 복사 및 교체
+    const newFinalValues = [...finalValues];
+    newFinalValues[selectedValueIndex] = newCustomValue;
+
+    // localStorage 업데이트
+    localStorage.setItem("values-final", JSON.stringify(newFinalValues));
+    localStorage.setItem("custom-value-result", customValue.trim());
+
+    // sessionStorage 플래그 초기화 (재저장 허용)
+    sessionStorage.removeItem("values-saved-to-db");
+
+    // 화면 업데이트
+    setFinalValues(newFinalValues);
+    setShowCustomInput(false);
+    setCustomValue("");
+    setSelectedValueIndex(null);
+
+    toast.success("가치가 성공적으로 교체되었습니다! 페이지를 새로고침하면 DB에 저장됩니다.");
   };
 
   if (finalValues.length === 0) {
@@ -483,6 +552,72 @@ ${new Date().toLocaleDateString("ko-KR")}`;
               </ul>
             </CardContent>
           </Card>
+
+          {/* 나만의 가치 추가 */}
+          <div className="text-center space-y-4">
+            {!showCustomInput ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  위 3가지보다 더 중요한 가치가 있다면 추가해 주세요
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCustomInput(true)}
+                  className="gap-2"
+                >
+                  나만의 가치 추가하기
+                </Button>
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="custom-value">나만의 가치 (한글)</Label>
+                    <Input
+                      id="custom-value"
+                      placeholder="예: 성실함, 배움, 도전정신"
+                      value={customValue}
+                      onChange={(e) => setCustomValue(e.target.value)}
+                      maxLength={20}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>교체할 가치를 선택하세요</Label>
+                    <RadioGroup
+                      value={selectedValueIndex?.toString()}
+                      onValueChange={(value) => setSelectedValueIndex(parseInt(value))}
+                    >
+                      {finalValues.map((value, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <RadioGroupItem value={index.toString()} id={`value-${index}`} />
+                          <Label htmlFor={`value-${index}`} className="cursor-pointer">
+                            {index + 1}. {value.korean} ({value.english})
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowCustomInput(false);
+                        setCustomValue("");
+                        setSelectedValueIndex(null);
+                      }}
+                    >
+                      취소
+                    </Button>
+                    <Button onClick={handleReplaceValue}>
+                      교체하기
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* 액션 버튼 */}
           <div className="flex flex-wrap gap-4 justify-center">

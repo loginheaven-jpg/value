@@ -29,6 +29,11 @@ export default function Sort() {
   const [loading, setLoading] = useState(true);
   const [restored, setRestored] = useState(false);
   
+  // 커스텀 가치 입력 관련 state (Step 3에서만 사용)
+  const [customInputMode, setCustomInputMode] = useState(false);
+  const [customInputValue, setCustomInputValue] = useState("");
+  const [customValueAdded, setCustomValueAdded] = useState(false);
+  
   // 슈퍼어드민 체크 (viproject@naver.com)
   const storedEmail = localStorage.getItem("user-email");
   const isSuperAdmin = storedEmail === "viproject@naver.com";
@@ -126,7 +131,78 @@ export default function Sort() {
   const selectedValues = availableValues.filter((v) => selectedIds.has(v.id));
   const unselectedValues = availableValues.filter((v) => !selectedIds.has(v.id));
 
+  // 커스텀 가치 입력 처리
+  const handleCustomValueSubmit = () => {
+    const trimmed = customInputValue.trim();
+    if (!trimmed) {
+      toast.error("가치 단어를 입력해주세요.");
+      return;
+    }
+    
+    if (trimmed.length < 2 || trimmed.length > 15) {
+      toast.error("가치 단어는 2~15자 사이여야 합니다.");
+      return;
+    }
+    
+    // 기존 72개 카드에서 검색 (대소문자, 공백 무시)
+    const normalized = trimmed.replace(/\s+/g, "").toLowerCase();
+    const existingCard = allValues.find(v => 
+      v.id !== 73 && v.korean.replace(/\s+/g, "").toLowerCase() === normalized
+    );
+    
+    if (existingCard) {
+      // 기존 카드 소환
+      const newAvailable = [...availableValues.filter(v => v.id !== 73), existingCard];
+      setAvailableValues(newAvailable);
+      
+      const newSelected = new Set(selectedIds);
+      newSelected.add(existingCard.id);
+      setSelectedIds(newSelected);
+      
+      setCustomInputMode(false);
+      setCustomInputValue("");
+      setCustomValueAdded(true);
+      
+      toast.success(`"기존 가치 '${existingCard.korean}'을(를) 추가했습니다!`);
+      
+      // localStorage에 저장
+      localStorage.setItem("custom-value-step3", JSON.stringify({ type: "existing", id: existingCard.id, korean: existingCard.korean }));
+    } else {
+      // 새 커스텀 카드 생성
+      const newId = 1000 + Date.now() % 10000; // 유니크 ID
+      const newCard: Value = {
+        id: newId,
+        korean: trimmed,
+        english: "Custom",
+        description: "나만의 가치",
+        category: "커스텀"
+      };
+      
+      const newAvailable = [...availableValues.filter(v => v.id !== 73), newCard];
+      setAvailableValues(newAvailable);
+      
+      const newSelected = new Set(selectedIds);
+      newSelected.add(newId);
+      setSelectedIds(newSelected);
+      
+      setCustomInputMode(false);
+      setCustomInputValue("");
+      setCustomValueAdded(true);
+      
+      toast.success(`"내 가치 '${trimmed}'을(를) 추가했습니다!`);
+      
+      // localStorage에 저장
+      localStorage.setItem("custom-value-step3", JSON.stringify({ type: "custom", id: newId, korean: trimmed }));
+    }
+  };
+  
   const handleCardClick = (id: number) => {
+    // 73번 카드 (커스텀 가치 추가) 클릭 시
+    if (id === 73 && currentStep === 3) {
+      setCustomInputMode(true);
+      return;
+    }
+    
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) {
       newSelected.delete(id);
@@ -148,7 +224,8 @@ export default function Sort() {
 
     if (currentStep === 3) {
       // Step3 완료 - 5개 선택 완료, 쌍대비교 페이지로
-      const selectedValues = allValues.filter((v) => selectedIds.has(v.id));
+      // availableValues에서 선택된 것들을 가져옴 (커스텀 가치 포함)
+      const selectedValues = availableValues.filter((v) => selectedIds.has(v.id));
       localStorage.setItem("values-step3", JSON.stringify(selectedValues));
       // 진행 상황 삭제 (쌍대비교로 넘어가므로)
       localStorage.removeItem("values-progress");
@@ -164,7 +241,16 @@ export default function Sort() {
       // 다음 단계로
       const nextStep = (currentStep + 1) as Step;
       setCurrentStep(nextStep);
-      const nextAvailable = allValues.filter((v) => selectedIds.has(v.id));
+      let nextAvailable = allValues.filter((v) => selectedIds.has(v.id));
+      
+      // Step 3으로 진입 시 73번 카드 추가 (커스텀 가치 추가 기능)
+      if (nextStep === 3) {
+        const customCard = allValues.find(v => v.id === 73);
+        if (customCard && !customValueAdded) {
+          nextAvailable = [...nextAvailable, customCard];
+        }
+      }
+      
       setAvailableValues(nextAvailable);
       setSelectedIds(new Set());
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -296,15 +382,84 @@ export default function Sort() {
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {unselectedValues.map((value) => (
-                <ValueCard
-                  key={value.id}
-                  value={value}
-                  isSelected={false}
-                  onClick={() => handleCardClick(value.id)}
-                  disabled={selectedIds.size >= config.to}
-                />
-              ))}
+              {unselectedValues.map((value) => {
+                // 73번 카드 (커스텀 가치 추가) 특별 처리
+                if (value.id === 73 && currentStep === 3) {
+                  return (
+                    <div
+                      key={value.id}
+                      className="relative p-4 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer min-h-[160px] flex flex-col items-center justify-center"
+                      onClick={() => !customInputMode && handleCardClick(value.id)}
+                    >
+                      {customInputMode ? (
+                        <div className="w-full space-y-3" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="text"
+                            value={customInputValue}
+                            onChange={(e) => setCustomInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleCustomValueSubmit();
+                              } else if (e.key === "Escape") {
+                                setCustomInputMode(false);
+                                setCustomInputValue("");
+                              }
+                            }}
+                            placeholder="예: 성실함, 배움, 도전정신"
+                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            autoFocus
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={handleCustomValueSubmit}
+                              className="flex-1"
+                            >
+                              저장 (Enter)
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setCustomInputMode(false);
+                                setCustomInputValue("");
+                              }}
+                            >
+                              취소 (Esc)
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground text-center">
+                            기존 72개 중 있다면 자동으로 추가됩니다
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-4xl mb-2">➕</div>
+                          <h3 className="text-lg font-bold text-primary text-center">
+                            {value.korean}
+                          </h3>
+                          <p className="text-sm text-muted-foreground text-center mt-2">
+                            {value.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground text-center mt-2">
+                            클릭하여 단어만 입력하세요
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  );
+                }
+                
+                return (
+                  <ValueCard
+                    key={value.id}
+                    value={value}
+                    isSelected={false}
+                    onClick={() => handleCardClick(value.id)}
+                    disabled={selectedIds.size >= config.to}
+                  />
+                );
+              })}
             </div>
           </div>
         )}

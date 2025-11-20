@@ -70,5 +70,6 @@
   {"id": 69, "korean": "희망", "english": "Hope", "description": "더 나은 미래를 믿음", "category": "정서"},
   {"id": 70, "korean": "건강", "english": "Health", "description": "몸과 마음의 건강을 유지함", "category": "웰빙"},
   {"id": 71, "korean": "환경", "english": "Environment", "description": "자연과 환경을 보호함", "category": "사회"},
-  {"id": 72, "korean": "겸양", "english": "Modesty", "description": "자신을 낮추고 겸손하게 행동함", "category": "덕목"}
+  {"id": 72, "korean": "겸양", "english": "Modesty", "description": "자신을 낮추고 겸손하게 행동함", "category": "덕목"},
+  {"id": 73, "korean": "나만의 가치 추가하기", "english": "Add Custom Value", "description": "중요한 가치가 없다면 추가할 수 있습니다", "category": "커스텀"}
 ]

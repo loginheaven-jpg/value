@@ -30,6 +30,7 @@ export const appRouter = router({
           value1: z.string(),
           value2: z.string(),
           value3: z.string(),
+          customValue: z.string().optional(), // 사용자가 추가한 커스텀 가치 (선택적)
         })
       )
       .mutation(async ({ input }) => {
