@@ -84,7 +84,7 @@ export default function Intro() {
           <p className="text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed">
             당신의 삶을 이끄는 핵심 가치를 발견하세요.
             <br />
-            72개의 가치 카드를 4단계로 좋혀가며, 진정으로 중요한 것을 찾아갑니다.
+            72개의 가치 카드를 4단계로 좁혀가며, 진정으로 중요한 것을 찾아갑니다.
           </p>
         </div>
 
@@ -99,7 +99,7 @@ export default function Intro() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                72개 → 20개 → 10개 → 5개 → 3개로 점진적으로 좋혀가며 핵심 가치를 발견합니다.
+                72개 → 20개 → 10개 → 5개 → 3개로 점진적으로 좁혀가며 핵심 가치를 발견합니다.
               </CardDescription>
             </CardContent>
           </Card>
