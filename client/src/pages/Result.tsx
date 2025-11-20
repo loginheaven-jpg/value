@@ -428,12 +428,15 @@ export default function Result() {
 
   const handleHome = async () => {
     // 처음으로: 저장 후 이동 (다이얼로그 없이)
-    try {
-      await saveToDatabase();
-      toast.success("결과가 저장되었습니다.");
-    } catch (error) {
-      console.error("저장 실패:", error);
-      // 저장 실패해도 계속 진행
+    const savedFlag = sessionStorage.getItem("values-saved-to-db");
+    if (!savedFlag) {
+      try {
+        await saveToDatabase();
+        toast.success("결과가 저장되었습니다.");
+      } catch (error) {
+        console.error("저장 실패:", error);
+        // 저장 실패해도 계속 진행
+      }
     }
     setLocation("/");
   };
@@ -697,11 +700,14 @@ export default function Result() {
               size="lg"
               variant="default"
               onClick={async () => {
-                try {
-                  await saveToDatabase();
-                  toast.success("결과가 저장되었습니다.");
-                } catch (error) {
-                  console.error("저장 실패:", error);
+                const savedFlag = sessionStorage.getItem("values-saved-to-db");
+                if (!savedFlag) {
+                  try {
+                    await saveToDatabase();
+                    toast.success("결과가 저장되었습니다.");
+                  } catch (error) {
+                    console.error("저장 실패:", error);
+                  }
                 }
                 setLocation("/my-results");
               }}

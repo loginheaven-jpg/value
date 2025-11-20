@@ -136,7 +136,7 @@ export default function PairwiseComparison() {
           </p>
           <div className="max-w-md mx-auto">
             <div className="flex justify-between text-sm text-slate-600 mb-2">
-              <span>{currentPairIndex + 1} / {pairs.length}</span>
+              <span>{currentPairIndex} / {pairs.length}</span>
               <span>{Math.round(progress)}% 완료</span>
             </div>
             <Progress value={progress} className="h-2" />
