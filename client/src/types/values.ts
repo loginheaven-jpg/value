@@ -26,7 +26,7 @@ export const STEP_CONFIGS: StepConfig[] = [
   },
   {
     step: 2,
-    title: "2단계: 더 좋혀가기",
+    title: "2단계: 더 좁혀가기",
     instruction: "선택한 20개 중에서 더 중요한 10개를 선택해주세요. (한번 클릭: 선택, 두번 클릭: 해제)",
     from: 20,
     to: 10,
