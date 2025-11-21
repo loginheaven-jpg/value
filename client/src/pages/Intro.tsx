@@ -82,9 +82,9 @@ export default function Intro() {
 
           {/* 설명 */}
           <p className="text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed">
-            당신의 삶을 이끄는 핵심 가치를 발견하세요.
+            당신은 어떤 사람인가요? 무엇이 당신을 당신답게 만드나요?
             <br />
-            72개의 가치 카드를 4단계로 좁혀가며, 진정으로 중요한 것을 찾아갑니다.
+            72개의 가치 카드를 천천히 좋혀가며, 진짜 나를 발견하는 여정을 시작하세요.
           </p>
         </div>
 
@@ -95,11 +95,11 @@ export default function Intro() {
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                 <Target className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle className="text-lg">4단계 프로세스</CardTitle>
+              <CardTitle className="text-lg">4단계 여정</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                72개 → 20개 → 10개 → 5개 → 3개로 점진적으로 좁혀가며 핵심 가치를 발견합니다.
+                72개에서 시작해 단계별로 좋혀가며, 진짜 나를 만나는 여정입니다.
               </CardDescription>
             </CardContent>
           </Card>
@@ -109,11 +109,11 @@ export default function Intro() {
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                 <Heart className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle className="text-lg">한국인 맞춤</CardTitle>
+              <CardTitle className="text-lg">한국인의 마음</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                효도, 정, 의리 등 한국 문화에 특화된 가치를 포함한 72개 가치 목록.
+                효도, 정, 의리 등 우리 문화에 뿌리내린 72개의 가치를 담았습니다.
               </CardDescription>
             </CardContent>
           </Card>
@@ -123,11 +123,11 @@ export default function Intro() {
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                 <Lightbulb className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle className="text-lg">즉시 활용</CardTitle>
+              <CardTitle className="text-lg">삶에 바로 적용</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                결과를 PDF로 다운로드하여 코칭 세션, 개인 성찰, 팀 워크숍에 활용하세요.
+                발견한 가치를 일상의 선택과 결정에 바로 활용할 수 있습니다.
               </CardDescription>
             </CardContent>
           </Card>

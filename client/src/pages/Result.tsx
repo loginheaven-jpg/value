@@ -533,13 +533,14 @@ export default function Result() {
           {/* 축하 메시지 */}
           <div className="text-center space-y-4">
             <div className="inline-block px-4 py-2 rounded-full bg-primary/10">
-              <span className="text-primary font-semibold">🎉 완료!</span>
+              <span className="text-primary font-semibold">🎉 축하합니다!</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold">
-              {name}님의 핵심 가치
+              {name}님, 당신을 발견했습니다
             </h1>
             <p className="text-lg text-muted-foreground">
-              이 세 가지 가치가 당신의 삶을 이끄는 나침반입니다.
+              이 세 가지 가치가 당신을 당신답게 만드는 나침반입니다.<br />
+              앞으로 중요한 결정을 내릴 때마다, 이 가치들을 떠올려보세요.
             </p>
           </div>
 

@@ -90,13 +90,13 @@ export default function FinalSelection() {
             <span className="font-semibold">우선순위 결과</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            최종 3개의 가치를 선택하세요
+            당신의 인생을 대표할 3가지를 선택하세요
           </h1>
           <p className="text-slate-600 mb-2">
             아래는 여러분의 선택을 바탕으로 정렬된 순위입니다
           </p>
           <p className="text-sm text-slate-500">
-            순위는 참고용이며, 최종 3개는 자유롭게 선택하실 수 있습니다
+            순위에 엄매이지 마세요. 가슴이 이끌는 대로 자유롭게 선택하세요.
           </p>
         </div>
 

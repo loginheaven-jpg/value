@@ -129,10 +129,10 @@ export default function PairwiseComparison() {
         {/* 헤더 */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            더 중요한 가치를 선택하세요
+            두 가지 중 하나를 선택한다면?
           </h1>
           <p className="text-slate-600 mb-4">
-            두 가치를 비교하여 더 중요하다고 생각하는 것을 선택해주세요
+            머리가 아닌 가슴으로, 직관적으로 선택해주세요. 정답은 없습니다.
           </p>
           <div className="max-w-md mx-auto">
             <div className="flex justify-between text-sm text-slate-600 mb-2">
