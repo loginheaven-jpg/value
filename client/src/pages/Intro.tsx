@@ -84,7 +84,7 @@ export default function Intro() {
           <p className="text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed">
             당신은 어떤 사람인가요? 무엇이 당신을 당신답게 만드나요?
             <br />
-            72개의 가치 카드를 천천히 좋혀가며, 진짜 나를 발견하는 여정을 시작하세요.
+            72개의 가치 카드를 천천히 좁혀가며, 진짜 나를 발견하는 여정을 시작하세요.
           </p>
         </div>
 
@@ -99,7 +99,7 @@ export default function Intro() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                72개에서 시작해 단계별로 좋혀가며, 진짜 나를 만나는 여정입니다.
+                72개에서 시작해 단계별로 좁혀가며, 진짜 나를 만나는 여정입니다.
               </CardDescription>
             </CardContent>
           </Card>
