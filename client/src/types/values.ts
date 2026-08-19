@@ -21,7 +21,7 @@ export const STEP_CONFIGS: StepConfig[] = [
     step: 1,
     title: "1단계: 첫 번째 선택",
     instruction: "'마음이 더 끌리는' 카드 20개를 선택해주세요. '그래야만하지, 이게 중요한 게 맞지' 이런 생각은 내려 놓으세요.\n(한번 클릭: 선택, 두번 클릭: 해제)",
-    from: 80,
+    from: 72,
     to: 20,
   },
   {
