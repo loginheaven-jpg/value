@@ -14,7 +14,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Value } from "@/types/values";
-import { Home, RotateCcw, Copy, ChevronDown, ChevronUp, Settings, History } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Home, RotateCcw, Copy, ChevronDown, ChevronUp, Printer, Settings, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -283,7 +284,7 @@ export default function Result() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* 슈퍼어드민 링크 */}
       {isSuperAdmin && (
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-50 no-print">
           <Button
             variant="outline"
             size="sm"
@@ -318,7 +319,7 @@ export default function Result() {
               const questions = getReflectionQuestions(value);
 
               return (
-                <Card key={value.id} className="overflow-hidden">
+                <Card key={value.id} className="overflow-hidden print-keep">
                   <CardContent className="p-6">
                     {/* 가치 정보 (한글 + 영문 + 설명 가로 배치) */}
                     <div 
@@ -351,20 +352,27 @@ export default function Result() {
                       </Button>
                     </div>
 
-                    {/* 성찰 질문 (확장 시 표시) */}
-                    {isExpanded && (
-                      <div className="mt-6 p-4 bg-muted/50 rounded-lg space-y-3 reflection-section">
-                        <p className="font-semibold text-foreground flex items-center gap-2">
-                          <span>💭</span>
-                          <span>성찰 질문</span>
+                    {/*
+                      성찰 질문. **조건부 렌더가 아니라 클래스 접힘이다.**
+                      인쇄에서 모두 펼쳐야 하는데, 미디어 쿼리는 DOM 에 없는 노드를 되살릴 수
+                      없다. 항상 렌더해 두고 접을 때만 감춘다(@media print 가 이 숨김을 해제).
+                    */}
+                    <div
+                      className={cn(
+                        "mt-6 p-4 bg-muted/50 rounded-lg space-y-3 reflection-section",
+                        !isExpanded && "hidden"
+                      )}
+                    >
+                      <p className="font-semibold text-foreground flex items-center gap-2">
+                        <span>💭</span>
+                        <span>성찰 질문</span>
+                      </p>
+                      {questions.map((question, qIndex) => (
+                        <p key={qIndex} className="text-sm text-foreground/80 pl-6">
+                          {qIndex + 1}. {question}
                         </p>
-                        {questions.map((question, qIndex) => (
-                          <p key={qIndex} className="text-sm text-foreground/80 pl-6">
-                            {qIndex + 1}. {question}
-                          </p>
-                        ))}
-                      </div>
-                    )}
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -387,8 +395,8 @@ export default function Result() {
             </CardContent>
           </Card>
 
-          {/* 나만의 가치 추가 */}
-          <div className="text-center space-y-4">
+          {/* 나만의 가치 추가 — 화면 전용 */}
+          <div className="text-center space-y-4 no-print">
             {!showCustomInput ? (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
@@ -453,8 +461,8 @@ export default function Result() {
             )}
           </div>
 
-          {/* 액션 버튼 */}
-          <div className="flex flex-wrap gap-4 justify-center">
+          {/* 액션 버튼 — 인쇄물에는 담지 않는다 */}
+          <div className="flex flex-wrap gap-4 justify-center no-print">
             <Button
               size="lg"
               onClick={handleCopyValues}
@@ -462,6 +470,21 @@ export default function Result() {
             >
               <Copy className="w-5 h-5" />
               복사하기
+            </Button>
+
+            {/*
+              인쇄 버튼은 768px 이상에서만 보인다(D-7). 모바일 브라우저의 인쇄는 메뉴로
+              들어가는 편이라 버튼이 오히려 혼란스럽다. 그래도 메뉴 경로로 인쇄할 때
+              성찰 질문이 펼쳐지는 것은 CSS 가 보장한다.
+            */}
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => window.print()}
+              className="gap-2 hidden md:inline-flex"
+            >
+              <Printer className="w-5 h-5" />
+              인쇄하기
             </Button>
 
             <Button

@@ -175,3 +175,54 @@
     }
   }
 }
+
+/*
+ * 인쇄 (Phase 41)
+ *
+ * 결과 화면은 코칭 세션에 종이로 들고 들어가는 산출물이다. 화면 전용 요소를 걷어내고,
+ * 접혀 있던 성찰 질문을 모두 펼친다.
+ *
+ * `.reflection-section` 의 숨김 해제가 이 블록의 핵심이다. 그것이 듣는 것은 `Result.tsx`
+ * 가 블록을 조건부 렌더가 아니라 항상 렌더하고 접힘을 클래스로만 표현하기 때문이다.
+ * 조건부 렌더로 되돌리면 이 규칙은 조용히 무력해진다.
+ */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* 화면 전용 — 버튼·다이얼로그·토스트 */
+  button,
+  [role="dialog"],
+  [role="alertdialog"],
+  [data-sonner-toaster],
+  .no-print {
+    display: none !important;
+  }
+
+  /* 접힌 성찰 질문을 모두 펼친다 */
+  .reflection-section {
+    display: block !important;
+  }
+
+  /* 화면용 장식은 잉크만 먹는다 */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* 카드가 페이지 경계에서 잘리지 않게 */
+  .print-keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .container {
+    max-width: none !important;
+  }
+}
+
