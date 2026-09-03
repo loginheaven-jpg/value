@@ -79,24 +79,9 @@ export default function Result() {
 
           if (name && email && parsed.length === 3) {
              // 커스텀 가치 확인 (localStorage에서)
-            let customValue: string | undefined = undefined;
-            
-            // Result.tsx에서 교체한 경우
-            const customValueResult = localStorage.getItem("custom-value-result");
-            if (customValueResult) {
-              customValue = customValueResult;
-            } else {
-              // Step 3에서 추가한 경우
-              const customValueData = localStorage.getItem("custom-value-step3");
-              if (customValueData) {
-                try {
-                  const customData = JSON.parse(customValueData);
-                  customValue = customData.korean;
-                } catch (e) {
-                  console.error("Failed to parse custom value:", e);
-                }
-              }
-            }
+            // 결과 화면에서 가치를 교체한 경우에만 값이 있다(§7.2 — 이 기능은 유지한다).
+            //   1단계의 73번 카드 경로는 Phase 39-C 에서 제거됐다.
+            const customValue = localStorage.getItem("custom-value-result") ?? undefined;
             
             console.log("[DEBUG] DB 저장 시도", {
               name,
@@ -152,22 +137,8 @@ export default function Result() {
       return Promise.resolve();
     }
 
-    // 커스텀 가치 확인
-    let customValue: string | undefined = undefined;
-    const customValueResult = localStorage.getItem("custom-value-result");
-    if (customValueResult) {
-      customValue = customValueResult;
-    } else {
-      const customValueData = localStorage.getItem("custom-value-step3");
-      if (customValueData) {
-        try {
-          const customData = JSON.parse(customValueData);
-          customValue = customData.korean;
-        } catch (e) {
-          console.error("Failed to parse custom value:", e);
-        }
-      }
-    }
+    // 결과 화면에서 교체한 경우에만 값이 있다(§7.2).
+    const customValue = localStorage.getItem("custom-value-result") ?? undefined;
 
     console.log("[DEBUG] DB 저장 시도", {
       name,

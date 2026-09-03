@@ -351,3 +351,10 @@
 - [x] 회귀 테스트 6종 추가 — 보유·공백·중복·문구 동일성·사문 부재·매핑 부활 금지
 - [x] `docs/01`, `docs/03` 갱신
 
+## Phase 39-C: 73번 카드 레거시 제거 (완료)
+- [x] `Sort.tsx`에서 커스텀 입력 state 3개·`handleCustomValueSubmit`·73번 분기 3곳 제거 (509→357줄)
+- [x] `Result.tsx`의 `custom-value-step3` 읽기 2곳 제거 (560→531줄)
+- [x] 결과 화면 가치 교체(`custom-value-result`)와 `customValue` 컬럼은 유지 (§7.2)
+- [x] 레거시 부활 방지 회귀 테스트
+- [x] `docs/06` §2.1을 결정 내용으로 갱신
+

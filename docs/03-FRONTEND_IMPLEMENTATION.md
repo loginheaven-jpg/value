@@ -29,7 +29,7 @@
 | localStorage | `pairwise-results` | 승리 수 기준 정렬된 5개 값 | `PairwiseComparison.tsx` → `FinalSelection.tsx` |
 | localStorage | `values-final` | 최종 3개 `Value[]` | `FinalSelection.tsx` → `Result.tsx` |
 | sessionStorage | `values-saved-to-db` | 결과 자동 저장 중복 방지 플래그 | `Result.tsx` |
-| localStorage | `custom-value-step3` | 과거 Step 3 사용자 정의 가치 정보 | 레거시 |
+| localStorage | ~~`custom-value-step3`~~(Phase 39-C 폐기) | 과거 Step 3 사용자 정의 가치 정보 | 레거시 |
 | localStorage | `custom-value-result` | 결과 화면에서 교체한 사용자 정의 가치 | 레거시 |
 
 ### 저장소 수정 원칙

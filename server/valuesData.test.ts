@@ -95,3 +95,29 @@ describe("성찰 질문은 카드 데이터가 소유한다", () => {
     expect(source).toContain("DEFAULT_QUESTIONS");
   });
 });
+
+// ── Phase 39-C: 73번 카드 레거시 제거 ───────────────────────────────────────
+// 73번 카드는 Phase 36 에 데이터에서 사라졌는데 Sort.tsx 의 분기가 남아 실행되지 않는 코드로 있었다.
+// 결과 화면의 가치 교체(§7.2)는 **유지**하므로 custom-value-result 는 살아 있어야 한다.
+describe("73번 카드 레거시가 되살아나지 않았다", () => {
+  const read = (rel: string) => readFile(new URL(rel, import.meta.url), "utf8");
+
+  it("Sort.tsx 에 73번 분기와 커스텀 입력이 없다", async () => {
+    const source = await read("../client/src/pages/Sort.tsx");
+    expect(source).not.toMatch(/73/);
+    expect(source).not.toContain("custom-value-step3");
+    expect(source).not.toContain("customInputMode");
+    expect(source).not.toContain("handleCustomValueSubmit");
+  });
+
+  it("Result.tsx 는 custom-value-step3 를 읽지 않는다", async () => {
+    const source = await read("../client/src/pages/Result.tsx");
+    expect(source).not.toContain("custom-value-step3");
+  });
+
+  it("결과 화면의 가치 교체는 유지된다 (§7.2)", async () => {
+    const source = await read("../client/src/pages/Result.tsx");
+    expect(source).toContain("custom-value-result");
+  });
+});
+
