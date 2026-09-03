@@ -4,503 +4,791 @@
     "korean": "가족",
     "english": "Family",
     "description": "가족과의 유대와 책임을 소중히 여김",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "가족과의 관계에서 이 가치가 어떻게 나타나나요?",
+      "가족을 위해 최근에 어떤 선택을 했나요?"
+    ]
   },
   {
     "id": 2,
     "korean": "감사",
     "english": "Gratitude",
     "description": "받은 것에 대해 고마워하고 표현함",
-    "category": "정서"
+    "category": "정서",
+    "questions": [
+      "최근 누군가에게 고마움을 전한 순간은 언제였나요?",
+      "당연하게 여기던 것 중에 다시 감사하게 된 것은 무엇인가요?"
+    ]
   },
   {
     "id": 3,
     "korean": "개방성",
     "english": "Openness",
     "description": "새로운 생각과 경험을 환영함",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "최근 당신의 생각을 바꾸게 만든 경험은 무엇이었나요?",
+      "낯선 의견을 만났을 때 당신은 먼저 무엇을 하나요?"
+    ]
   },
   {
     "id": 4,
     "korean": "겸손",
     "english": "Humility",
     "description": "자신을 낮추고 타인을 존중함",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "겸손이 당신에게 어떤 의미인가요?",
+      "겸손을 실천하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 5,
     "korean": "경쟁력",
     "english": "Competitiveness",
     "description": "목표 달성을 위해 경쟁함",
-    "category": "성취"
+    "category": "성취",
+    "questions": [
+      "무엇과 겨룰 때 가장 살아 있다고 느끼나요?",
+      "이기는 것과 성장하는 것 중 무엇이 더 당신을 움직이나요?"
+    ]
   },
   {
     "id": 6,
     "korean": "경청",
     "english": "Listening",
     "description": "타인의 말에 귀 기울임",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "경청이 당신의 관계에 어떤 영향을 미치나요?",
+      "경청을 실천하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 7,
     "korean": "공정성",
     "english": "Fairness",
     "description": "모두를 공평하게 대함",
-    "category": "정의"
+    "category": "정의",
+    "questions": [
+      "공정성이 지켜지지 않을 때 어떤 감정을 느끼나요?",
+      "공정성을 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 8,
     "korean": "공헌",
     "english": "Contribution",
     "description": "사회에 가치를 더함",
-    "category": "사회"
+    "category": "사회",
+    "questions": [
+      "당신이 떠난 자리에 무엇이 남기를 바라나요?",
+      "지금 하는 일 중 세상에 보탬이 된다고 느끼는 것은 무엇인가요?"
+    ]
   },
   {
     "id": 9,
     "korean": "공감",
     "english": "Empathy",
     "description": "타인의 감정을 이해하고 공유함",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "다른 사람의 감정이 그대로 전해졌던 순간은 언제인가요?",
+      "공감하느라 정작 당신 자신을 놓친 적은 언제인가요?"
+    ]
   },
   {
     "id": 10,
     "korean": "관계",
     "english": "Connection",
     "description": "타인과 의미 있는 관계를 맺음",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "당신에게 가장 중요한 관계 세 가지는 무엇인가요?",
+      "그 관계에 최근 어떤 시간을 들였나요?"
+    ]
   },
   {
     "id": 11,
     "korean": "교육",
     "english": "Education",
     "description": "배움과 가르침을 중시함",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "배움이 당신의 삶에서 어떤 의미를 가지나요?",
+      "최근 가장 의미 있었던 배움은 무엇인가요?"
+    ]
   },
   {
     "id": 12,
     "korean": "권위",
     "english": "Authority",
     "description": "영향력과 결정권을 가짐",
-    "category": "영향력"
+    "category": "영향력",
+    "questions": [
+      "당신은 어떤 영역에서 결정권을 갖고 싶나요?",
+      "권한을 가졌을 때 가장 조심하는 것은 무엇인가요?"
+    ]
   },
   {
     "id": 13,
     "korean": "균형",
     "english": "Balance",
     "description": "삶의 여러 영역(일, 가족, 건강 등)에서 균형을 유지함",
-    "category": "웰빙"
+    "category": "웰빙",
+    "questions": [
+      "삶의 균형을 유지하기 위해 어떤 노력을 하나요?",
+      "균형이 깨졌을 때 어떻게 회복하나요?"
+    ]
   },
   {
     "id": 14,
     "korean": "근면",
     "english": "Diligence",
     "description": "부지런하고 성실하게 일함",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "근면이 당신에게 어떤 의미인가요?",
+      "근면을 실천하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 15,
     "korean": "나눔",
     "english": "Generosity",
     "description": "아낌없이 베풂",
-    "category": "사회"
+    "category": "사회",
+    "questions": [
+      "무엇을 나눌 때 가장 기쁜가요?",
+      "베풂과 소진 사이의 경계를 어디에 두고 있나요?"
+    ]
   },
   {
     "id": 16,
     "korean": "나다움",
     "english": "Authenticity",
     "description": "자신의 생각과 감정을 솔직하게 표현함",
-    "category": "진실"
+    "category": "진실",
+    "questions": [
+      "나다움이 당신에게 어떤 의미인가요?",
+      "나답게 살기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 17,
     "korean": "도전",
     "english": "Challenge",
     "description": "어려운 일에 맞서 도전함",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "최근 어떤 어려운 일에 도전했나요?",
+      "도전할 때 어떤 감정을 느끼나요?"
+    ]
   },
   {
     "id": 18,
     "korean": "독립성",
     "english": "Independence",
     "description": "타인에게 의존하지 않음",
-    "category": "자율"
+    "category": "자율",
+    "questions": [
+      "혼자 결정해서 가장 잘했다고 느낀 일은 무엇인가요?",
+      "도움을 청하기 어려울 때는 언제인가요?"
+    ]
   },
   {
     "id": 19,
     "korean": "리더십",
     "english": "Leadership",
     "description": "다른 이들을 이끌고 영향을 줌",
-    "category": "영향력"
+    "category": "영향력",
+    "questions": [
+      "리더십을 발휘할 때 어떤 가치를 중시하나요?",
+      "리더로서 가장 보람있었던 순간은 언제인가요?"
+    ]
   },
   {
     "id": 20,
     "korean": "명예",
     "english": "Honor",
     "description": "사회적 명예와 평판을 지킴",
-    "category": "한국특화"
+    "category": "한국특화",
+    "questions": [
+      "명예가 당신에게 어떤 의미인가요?",
+      "명예를 지키기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 21,
     "korean": "모험",
     "english": "Adventure",
     "description": "새롭고 흥미진진한 경험을 추구함",
-    "category": "탐험"
+    "category": "탐험",
+    "questions": [
+      "최근 처음 해본 일은 무엇인가요?",
+      "안전과 모험 사이에서 당신은 지금 어디쯤 서 있나요?"
+    ]
   },
   {
     "id": 22,
     "korean": "목적",
     "english": "Purpose",
     "description": "삶의 방향과 이유를 명확히 함",
-    "category": "의미"
+    "category": "의미",
+    "questions": [
+      "당신은 무엇을 위해 아침에 일어나나요?",
+      "지금의 일상이 그 방향과 얼마나 닿아 있나요?"
+    ]
   },
   {
     "id": 23,
     "korean": "배려",
     "english": "Consideration",
     "description": "타인을 돕고 보살핌",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "최근 타인을 배려한 구체적인 행동은 무엇이었나요?",
+      "배려할 때 어떤 보람을 느끼나요?"
+    ]
   },
   {
     "id": 24,
     "korean": "변화",
     "english": "Change",
     "description": "새로운 것을 받아들이고 적응함",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "최근 스스로 바꾼 것은 무엇인가요?",
+      "변화가 두려울 때 무엇이 당신을 붙잡나요?"
+    ]
   },
   {
     "id": 25,
     "korean": "사랑",
     "english": "Love",
     "description": "깊은 애정과 헌신",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "사랑이 당신의 삶에서 구체적으로 어떻게 표현되나요?",
+      "사랑을 주고받을 때 어떤 느낌이 드나요?"
+    ]
   },
   {
     "id": 26,
     "korean": "소명",
     "english": "Mission",
     "description": "자신이 해야 할 일을 깨닫고 실천함",
-    "category": "영성"
+    "category": "영성",
+    "questions": [
+      "당신이 하지 않으면 안 된다고 느끼는 일은 무엇인가요?",
+      "그 부름을 처음 느낀 순간은 언제였나요?"
+    ]
   },
   {
     "id": 27,
     "korean": "성장",
     "english": "Growth",
     "description": "지속적으로 발전하고 진화함",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "최근 어떤 영역에서 성장을 경험했나요?",
+      "성장을 위해 지금 도전하고 있는 것은 무엇인가요?"
+    ]
   },
   {
     "id": 28,
     "korean": "성취",
     "english": "Achievement",
     "description": "목표를 달성하고 결과를 만듦",
-    "category": "성취"
+    "category": "성취",
+    "questions": [
+      "가장 자랑스러운 성취는 무엇이며, 무엇이 그것을 가능하게 했나요?",
+      "뜻대로 되지 않았을 때 스스로에게 어떤 말을 했나요?"
+    ]
   },
   {
     "id": 29,
     "korean": "소속감",
     "english": "Belonging",
     "description": "집단의 일원으로 받아들여지고 소속됨",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "어디에 있을 때 '내 자리'라고 느끼나요?",
+      "속하기 위해 포기한 것이 있다면 무엇인가요?"
+    ]
   },
   {
     "id": 30,
     "korean": "솔직함",
     "english": "Honesty",
     "description": "타인에게 거짓 없이 진실을 말함",
-    "category": "진실"
+    "category": "진실",
+    "questions": [
+      "솔직함이 당신의 관계에 어떤 영향을 미치나요?",
+      "솔직함을 실천하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 31,
     "korean": "수용",
     "english": "Acceptance",
     "description": "있는 그대로를 인정함",
-    "category": "정서"
+    "category": "정서",
+    "questions": [
+      "바꿀 수 없는 것 중 아직 받아들여지지 못한 것은 무엇인가요?",
+      "있는 그대로 인정받은 경험은 언제였나요?"
+    ]
   },
   {
     "id": 32,
     "korean": "신념",
     "english": "Faith",
     "description": "신념이나 종교적 확신을 가짐",
-    "category": "영성"
+    "category": "영성",
+    "questions": [
+      "흔들릴 때 당신을 붙드는 믿음은 무엇인가요?",
+      "그 믿음이 시험받은 순간은 언제였나요?"
+    ]
   },
   {
     "id": 33,
     "korean": "신뢰",
     "english": "Trust",
     "description": "타인과의 관계에서 믿음을 쌓음",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "누구를 가장 신뢰하며, 그 이유는 무엇인가요?",
+      "신뢰가 깨진 경험이 있다면, 어떻게 회복했나요?"
+    ]
   },
   {
     "id": 34,
     "korean": "안전",
     "english": "Safety",
     "description": "위험으로부터 보호받음",
-    "category": "안전"
+    "category": "안전",
+    "questions": [
+      "안전이 당신에게 어떤 의미인가요?",
+      "안전을 지키기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 35,
     "korean": "양심",
     "english": "Conscience",
     "description": "도덕적 옳고 그름을 따름",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "양심에 따라 행동한 경험은 무엇인가요?",
+      "양심이 당신의 결정에 어떤 영향을 미치나요?"
+    ]
   },
   {
     "id": 36,
     "korean": "여유",
     "english": "Leisure",
     "description": "휴식과 즐거움을 누림",
-    "category": "웰빙"
+    "category": "웰빙",
+    "questions": [
+      "최근 아무것도 하지 않은 시간은 언제였나요?",
+      "쉼을 미루게 만드는 것은 무엇인가요?"
+    ]
   },
   {
     "id": 37,
     "korean": "열정",
     "english": "Passion",
     "description": "뜨겁게 몰입하고 헌신함",
-    "category": "정서"
+    "category": "정서",
+    "questions": [
+      "시간 가는 줄 몰랐던 최근의 일은 무엇인가요?",
+      "열정이 식었을 때 당신은 무엇을 하나요?"
+    ]
   },
   {
     "id": 38,
     "korean": "영성",
     "english": "Spirituality",
     "description": "초월적 의미와 연결됨",
-    "category": "영성"
+    "category": "영성",
+    "questions": [
+      "당신보다 큰 무엇과 연결되었다고 느낀 순간은 언제인가요?",
+      "그 연결을 일상에서 어떻게 지키고 있나요?"
+    ]
   },
   {
     "id": 39,
     "korean": "영향력",
     "english": "Influence",
     "description": "타인과 세상에 영향을 미침",
-    "category": "영향력"
+    "category": "영향력",
+    "questions": [
+      "타인에게 긍정적인 영향을 미친 경험은 무엇인가요?",
+      "영향력을 행사할 때 어떤 책임감을 느끼나요?"
+    ]
   },
   {
     "id": 40,
     "korean": "예의",
     "english": "Courtesy",
     "description": "격식과 예절을 지킴",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "예의가 당신의 관계에 어떤 영향을 미치나요?",
+      "예의를 지키기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 41,
     "korean": "용기",
     "english": "Courage",
     "description": "두려움에도 옳은 일을 함",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "용기를 발휘했던 순간은 언제인가요?",
+      "용기가 필요한 상황에서 어떻게 대처하나요?"
+    ]
   },
   {
     "id": 42,
     "korean": "원칙",
     "english": "Integrity",
     "description": "자신의 가치관을 일관되게 지킴",
-    "category": "진실"
+    "category": "진실",
+    "questions": [
+      "원칙이 당신에게 어떤 의미인가요?",
+      "원칙을 지키기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 43,
     "korean": "유머",
     "english": "Humor",
     "description": "즐거움과 웃음을 나눔",
-    "category": "정서"
+    "category": "정서",
+    "questions": [
+      "당신은 언제 가장 크게 웃나요?",
+      "웃음으로 넘겼지만 사실은 짚어야 했던 일은 무엇인가요?"
+    ]
   },
   {
     "id": 44,
     "korean": "유연성",
     "english": "Flexibility",
     "description": "상황에 맞게 유연하게 대처함",
-    "category": "적응"
+    "category": "적응",
+    "questions": [
+      "계획이 틀어졌을 때 당신은 먼저 무엇을 하나요?",
+      "끝까지 굽히지 않는 지점은 어디인가요?"
+    ]
   },
   {
     "id": 45,
     "korean": "의리",
     "english": "Brotherhood",
     "description": "친구를 위해 헌신하고 약속을 지킴",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "의리를 지키기 위해 어떤 희생을 한 적이 있나요?",
+      "이 가치가 당신의 관계에 어떤 영향을 미치나요?"
+    ]
   },
   {
     "id": 46,
     "korean": "인내",
     "english": "Perseverance",
     "description": "어려움 속에서도 끝까지 해냄",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "인내가 필요했던 경험은 무엇인가요?",
+      "인내를 통해 얻은 것은 무엇인가요?"
+    ]
   },
   {
     "id": 47,
     "korean": "인정",
     "english": "Recognition",
     "description": "노력과 성과를 인정받음",
-    "category": "성취"
+    "category": "성취",
+    "questions": [
+      "타인의 인정이 당신에게 어떤 의미인가요?",
+      "인정받았을 때 어떤 느낌이 드나요?"
+    ]
   },
   {
     "id": 48,
     "korean": "자기돌봄",
     "english": "Self-Care",
     "description": "자신을 돌보고 사랑함",
-    "category": "웰빙"
+    "category": "웰빙",
+    "questions": [
+      "당신을 회복시키는 일은 무엇인가요?",
+      "자신을 돌보는 일을 가장 먼저 미루게 되는 때는 언제인가요?"
+    ]
   },
   {
     "id": 49,
     "korean": "자부심",
     "english": "Pride",
     "description": "자신과 성과에 자긍심을 가짐",
-    "category": "성취"
+    "category": "성취",
+    "questions": [
+      "자부심을 느끼는 순간은 언제인가요?",
+      "자부심이 당신의 삶에 어떤 영향을 미치나요?"
+    ]
   },
   {
     "id": 50,
     "korean": "자율성",
     "english": "Autonomy",
     "description": "스스로 규칙을 정함",
-    "category": "자율"
+    "category": "자율",
+    "questions": [
+      "당신이 스스로 정한 규칙 중 가장 중요한 것은 무엇인가요?",
+      "누군가 그 규칙을 대신 정하려 할 때 어떤 기분이 드나요?"
+    ]
   },
   {
     "id": 51,
     "korean": "자유",
     "english": "Freedom",
     "description": "제약받지 않음",
-    "category": "자율"
+    "category": "자율",
+    "questions": [
+      "자유가 당신에게 어떤 의미인가요?",
+      "자유를 누릴 때 어떤 느낌이 드나요?"
+    ]
   },
   {
     "id": 52,
     "korean": "전문성",
     "english": "Professionalism",
     "description": "자기 분야에서 탁월함을 추구함",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "전문성을 키우기 위해 어떤 노력을 하고 있나요?",
+      "전문가로 인정받을 때 어떤 보람을 느끼나요?"
+    ]
   },
   {
     "id": 53,
     "korean": "정",
     "english": "Affection",
     "description": "시간이 쌓여 형성된 끈끈한 유대감",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "정이 당신의 관계에 어떤 영향을 미치나요?",
+      "정을 나누는 것이 어떤 의미인가요?"
+    ]
   },
   {
     "id": 54,
     "korean": "정의",
     "english": "Justice",
     "description": "공정함과 형평성을 추구함",
-    "category": "정의"
+    "category": "정의",
+    "questions": [
+      "정의가 당신에게 어떤 의미인가요?",
+      "정의를 실현하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 55,
     "korean": "조화",
     "english": "Harmony",
     "description": "타인과의 관계에서 갈등 없이 어울림",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "조화를 이루기 위해 어떤 노력을 하나요?",
+      "조화가 깨졌을 때 어떻게 회복하나요?"
+    ]
   },
   {
     "id": 56,
     "korean": "존엄",
     "english": "Dignity",
     "description": "인간으로서 존중받고 대우받음",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "존엄이 지켜졌을 때 어떤 느낌이 드나요?",
+      "타인의 존엄을 존중하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 57,
     "korean": "존중",
     "english": "Respect",
     "description": "타인의 가치를 인정하고 존중함",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "존중받는다고 느끼게 하는 상대의 행동은 무엇인가요?",
+      "당신은 존중한다는 마음을 어떻게 표현하나요?"
+    ]
   },
   {
     "id": 58,
     "korean": "즐거움",
     "english": "Fun",
     "description": "기쁨과 재미를 경험함",
-    "category": "정서"
+    "category": "정서",
+    "questions": [
+      "요즘 무엇이 당신을 웃게 하나요?",
+      "즐거움을 뒤로 미루게 만드는 것은 무엇인가요?"
+    ]
   },
   {
     "id": 59,
     "korean": "지혜",
     "english": "Wisdom",
     "description": "통찰력과 분별력을 가짐",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "어떤 경험을 통해 지혜를 얻었나요?",
+      "지혜를 나누는 것이 당신에게 어떤 의미인가요?"
+    ]
   },
   {
     "id": 60,
     "korean": "창의성",
     "english": "Creativity",
     "description": "새로운 아이디어를 창조함",
-    "category": "성장"
+    "category": "성장",
+    "questions": [
+      "창의성을 발휘할 때 어떤 느낌이 드나요?",
+      "당신의 창의성이 가장 빛났던 순간은 언제인가요?"
+    ]
   },
   {
     "id": 61,
     "korean": "책임감",
     "english": "Responsibility",
     "description": "맡은 바를 끝까지 완수함",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "책임감이 당신의 삶에 어떤 영향을 미치나요?",
+      "책임을 다하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 62,
     "korean": "충성",
     "english": "Loyalty",
     "description": "사람이나 조직에 헌신함",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "충성이 당신에게 어떤 의미인가요?",
+      "충성을 지키기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 63,
     "korean": "친밀감",
     "english": "Intimacy",
     "description": "깊은 감정적 유대와 친밀함을 나눔",
-    "category": "관계"
+    "category": "관계",
+    "questions": [
+      "속마음을 그대로 말할 수 있는 사람은 누구인가요?",
+      "더 가까워지고 싶은 관계에서 무엇이 걸림돌인가요?"
+    ]
   },
   {
     "id": 64,
     "korean": "친절",
     "english": "Kindness",
     "description": "따뜻하고 다정하게 대함",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "타인에게 친절을 베풀 때 어떤 느낌이 드나요?",
+      "친절이 당신의 삶에 어떤 영향을 미치나요?"
+    ]
   },
   {
     "id": 65,
     "korean": "평등",
     "english": "Equality",
     "description": "모두를 동등하게 대함",
-    "category": "정의"
+    "category": "정의",
+    "questions": [
+      "불평등하다고 느낀 장면 중 잊히지 않는 것은 무엇인가요?",
+      "당신은 어떤 자리에서 목소리를 내고 있나요?"
+    ]
   },
   {
     "id": 66,
     "korean": "평온",
     "english": "Peace",
     "description": "내면과 외면의 고요함을 유지함",
-    "category": "웰빙"
+    "category": "웰빙",
+    "questions": [
+      "평온을 느끼는 순간은 언제인가요?",
+      "평온을 유지하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 67,
     "korean": "풍요",
     "english": "Abundance",
     "description": "물질적 여유를 누림",
-    "category": "물질"
+    "category": "물질",
+    "questions": [
+      "당신에게 '충분하다'는 것은 어느 정도인가요?",
+      "돈이 당신의 선택을 바꾼 순간은 언제였나요?"
+    ]
   },
   {
     "id": 68,
     "korean": "효도",
     "english": "Filial Piety",
     "description": "부모를 공경하고 섬김",
-    "category": "한국특화"
+    "category": "한국특화",
+    "questions": [
+      "효도가 당신에게 어떤 의미인가요?",
+      "효도를 실천하기 위해 어떤 노력을 하나요?"
+    ]
   },
   {
     "id": 69,
     "korean": "희망",
     "english": "Hope",
     "description": "더 나은 미래를 믿음",
-    "category": "정서"
+    "category": "정서",
+    "questions": [
+      "가장 어두웠던 때 무엇이 당신을 버티게 했나요?",
+      "지금 기대하고 있는 것은 무엇인가요?"
+    ]
   },
   {
     "id": 70,
     "korean": "건강",
     "english": "Health",
     "description": "몸과 마음의 건강을 유지함",
-    "category": "웰빙"
+    "category": "웰빙",
+    "questions": [
+      "건강을 위해 지금 하고 있는 일은 무엇인가요?",
+      "건강이 당신의 삶에 어떤 영향을 미치나요?"
+    ]
   },
   {
     "id": 71,
     "korean": "환경",
     "english": "Environment",
     "description": "자연과 환경을 보호함",
-    "category": "사회"
+    "category": "사회",
+    "questions": [
+      "자연 앞에서 마음이 가장 편했던 장소는 어디인가요?",
+      "지구를 위해 계속하고 있는 습관은 무엇인가요?"
+    ]
   },
   {
     "id": 72,
     "korean": "겸양",
     "english": "Modesty",
     "description": "자신을 낮추고 겸손하게 행동함",
-    "category": "덕목"
+    "category": "덕목",
+    "questions": [
+      "칭찬을 받을 때 당신은 어떻게 반응하나요?",
+      "겸손 때문에 당신의 공이 묻히는 순간은 언제인가요?"
+    ]
   }
 ]

@@ -30,7 +30,7 @@ MySQL 또는 TiDB 호환 데이터베이스
 | `client/src/pages/` | 화면 단위 사용자 여정 | 경로·상태 키·다음 페이지 의존성을 함께 점검 |
 | `client/src/components/` | 카드·진행률 등 재사용 UI | shadcn/ui 래퍼와 서비스 전용 컴포넌트가 함께 존재 |
 | `client/src/types/values.ts` | `Value`, 단계 설정 타입·문구 | 단계 수와 `Sort.tsx`의 실제 라우팅은 완전히 일치하지 않으므로 변경 전 확인 |
-| `client/public/values.json` | 정식 72개 가치 카드 데이터 | id는 안정적으로 유지. 추가·삭제 시 결과·성찰 질문·단계 안내를 함께 검토 |
+| `client/public/values.json` | 정식 72개 가치 카드 데이터(성찰 질문 포함) | id는 안정적으로 유지. 카드를 추가하면 `questions` 2개를 함께 넣어야 테스트가 통과 |
 | `server/routers.ts` | tRPC API 계약 | 현재 `values` 라우터는 publicProcedure. 권한 설계 변경 시 여기부터 수정 |
 | `server/db.ts` | Drizzle 기반 조회·저장·삭제 함수 | DB 연결 불가 시의 오류 처리와 호출부 UX를 함께 검토 |
 | `drizzle/schema.ts` | 현재 데이터 모델 | 변경 시 마이그레이션 생성·적용 및 타입 검사를 필수 수행 |
@@ -65,8 +65,11 @@ interface Value {
   english: string;
   description: string;
   category: string;
+  questions: string[];   // 성찰 질문 2개 (Phase 38)
 }
 ```
+
+성찰 질문은 카드 데이터가 소유합니다. 한글명이 아니라 `id`로 붙어 있으므로 카드 이름을 바꿔도 끊기지 않습니다.
 
 정식 데이터는 id 1~72입니다. 데이터 id를 재번호화하면 저장된 진행 상태와 성찰 질문, 과거 브라우저 데이터의 참조가 깨질 수 있으므로 기존 id는 유지해야 합니다.
 

@@ -175,7 +175,8 @@ export default function Sort() {
         korean: trimmed,
         english: "Custom",
         description: "나만의 가치",
-        category: "커스텀"
+        category: "커스텀",
+        questions: []
       };
       
       const newAvailable = [...availableValues.filter(v => v.id !== 73), newCard];

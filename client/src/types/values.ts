@@ -4,6 +4,12 @@ export interface Value {
   english: string;
   description: string;
   category: string;
+  /**
+   * 성찰 질문 2개. 카드당 고유하며 결과 화면에서 쓴다(Phase 38).
+   * 한글명이 아니라 id 로 카드에 붙어 있으므로 카드 이름이 바뀌어도 끊기지 않는다.
+   * 런타임에 만들어지는 커스텀 가치는 빈 배열이며 기본 질문으로 떨어진다.
+   */
+  questions: string[];
 }
 
 export type Step = 1 | 2 | 3 | 4 | 5;

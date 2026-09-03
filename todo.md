@@ -340,3 +340,14 @@
 - [x] 미개발·보류 기능 및 후속 개발 로드맵 작성
 - [x] 카드 데이터 72개와 STEP_CONFIGS 초기 후보 수의 불일치 수정
 - [x] 문서와 소스 검증 후 GitHub 저장소 반영
+
+## Phase 38: 성찰 질문 데이터 통합 (완료)
+- [x] 이관 이전에 기존 40장 문구를 `server/__fixtures__/legacyQuestions.json`으로 고정
+- [x] `Value`에 `questions: string[]` 추가 (id 기준 연결)
+- [x] `values.json` 72장 전부에 질문 2개 — 이관 40장(문구 무변경) + 신규 32장
+- [x] 삭제된 카드용 사문 질문 9키 폐기
+- [x] `Result.tsx`의 `REFLECTION_QUESTIONS` 제거, `getReflectionQuestions(value)`로 교체
+- [x] 커스텀 가치 생성 지점 2곳에 `questions: []` (기본 질문으로 떨어짐)
+- [x] 회귀 테스트 6종 추가 — 보유·공백·중복·문구 동일성·사문 부재·매핑 부활 금지
+- [x] `docs/01`, `docs/03` 갱신
+
