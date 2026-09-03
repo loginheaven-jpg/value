@@ -7,15 +7,29 @@ interface ValueCardProps {
   isSelected: boolean;
   onClick: () => void;
   disabled?: boolean;
+  /**
+   * minimal 은 카테고리 태그를 감추고 여백을 줄인다. 검토 화면처럼 카드를 수십 장
+   * 늘어놓는 자리에서 쓴다. 설명은 남긴다 — 그것 없이는 고를 수 없다.
+   */
+  variant?: "full" | "minimal";
 }
 
-export function ValueCard({ value, isSelected, onClick, disabled }: ValueCardProps) {
+export function ValueCard({
+  value,
+  isSelected,
+  onClick,
+  disabled,
+  variant = "full",
+}: ValueCardProps) {
+  const minimal = variant === "minimal";
+
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "relative w-full p-4 rounded-lg border-2 transition-all duration-200",
+        "relative w-full rounded-lg border-2 transition-all duration-200",
+        minimal ? "p-3" : "p-4",
         "hover:shadow-md active:scale-[0.98]",
         "text-left group",
         isSelected
@@ -32,7 +46,7 @@ export function ValueCard({ value, isSelected, onClick, disabled }: ValueCardPro
       )}
 
       {/* 한글명 */}
-      <div className="text-lg font-bold text-foreground mb-1 pr-8">
+      <div className={cn("font-bold text-foreground mb-1 pr-8", minimal ? "text-base" : "text-lg")}>
         {value.korean}
       </div>
 
@@ -47,11 +61,13 @@ export function ValueCard({ value, isSelected, onClick, disabled }: ValueCardPro
       </div>
 
       {/* 카테고리 태그 */}
-      <div className="mt-3 inline-block">
-        <span className="text-xs px-2 py-1 rounded-full bg-accent/20 text-accent-foreground">
-          #{value.category}
-        </span>
-      </div>
+      {!minimal && (
+        <div className="mt-3 inline-block">
+          <span className="text-xs px-2 py-1 rounded-full bg-accent/20 text-accent-foreground">
+            #{value.category}
+          </span>
+        </div>
+      )}
     </button>
   );
 }

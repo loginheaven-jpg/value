@@ -24,6 +24,7 @@
 | localStorage | `user-name` | 문자열, 사용자 이름 | `Intro.tsx` |
 | localStorage | `user-email` | 문자열, 결과 저장·이력 조회 기준 | `Intro.tsx` |
 | localStorage | `values-progress` | 1~3단계 진행 상태 JSON, 24시간 만료 | `Sort.tsx` |
+| localStorage | `values-triage` | 1단계 분류 상태(라운드·남은 큐·판단·되돌리기 이력·국면), 24시간 만료 | `Sort.tsx` |
 | localStorage | `values-step3` | 선택한 5개 `Value[]` | `Sort.tsx` → `PairwiseComparison.tsx` |
 | localStorage | `pairwise-progress` | 쌍대비교 인덱스·승리 수 | `PairwiseComparison.tsx` |
 | localStorage | `pairwise-results` | 승리 수 기준 정렬된 5개 값 | `PairwiseComparison.tsx` → `FinalSelection.tsx` |
@@ -106,7 +107,11 @@
 | 시나리오 | 기대 결과 |
 |---|---|
 | 새 사용자 시작 | 이름·유효 이메일 없이 진행 불가 |
-| 1단계 | 정확히 20개 선택 전 다음 단계로 이동 불가 |
+| 1단계 분류 | 카드가 한 장씩 나오고 ← ↓ → 키와 세 버튼이 같은 더미로 보낸다 |
+| 1단계 되돌리기 | Backspace·버튼으로 방금 판단을 취소하면 그 카드가 큐 맨 앞으로 돌아온다 |
+| 1단계 하한 | '네'가 12장 미만이면 2단계로 갈 수 없고 보충 화면이 뜬다 |
+| 1단계 상한 | '네'가 24장을 넘으면 재분류를 권유하되 거절할 수 있다 |
+| 1단계 복귀 | 2단계에서 '이전 단계'를 누르면 검토 화면으로 돌아온다(빈 화면·재튕김 없음) |
 | 카드 선택 취소 | 선택 카드 영역과 카운트가 즉시 갱신 |
 | 새로고침 | 24시간 이내 진행 상태가 올바르게 복원 |
 | 3단계 종료 | 5개가 `/step4`에 동일하게 전달 |

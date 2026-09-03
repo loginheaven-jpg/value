@@ -367,3 +367,19 @@
 - [x] `docs/04` API 표, `docs/06` §2.2 갱신
 - [ ] **미이행**: 실제 Manus OAuth 로그인 1회 확인 — 자격 증명이 없어 수행 불가
 
+## Phase 40: 1단계 분류 전환 (완료)
+- [x] `vitest.config.ts` include에 `client/src/**` 추가 — 없으면 게이트 테스트가 수집조차 안 된다
+- [x] `StepConfig.barLabel` + 1·4단계 제목·문구 교정 (`to`는 불변)
+- [x] `TriageBucket`·`TriageState`·`TriageOutcome`·`resolveTriageOutcome` (하한 검사 우선)
+- [x] `CardTriage`·`TriageRerunPrompt`·`TriageReview` 신규
+- [x] `ValueCard` `variant="minimal"`, `ProgressBar` barLabel 반영
+- [x] `Sort.tsx` 1단계 분기 + `values-triage` 저장·복원·초기화 경로 등록
+- [x] `/step3` 404 교정 (`PairwiseComparison.tsx` 3곳 → `/sort`)
+- [x] 게이트·큐 단위 테스트 18종, 음성 대조 3종
+- [x] `docs/01`·`02`·`03`·`06` 갱신
+
+## Phase 40-B: 카드 순서 결정론화 (완료 — Phase 40에 통합)
+- [x] `buildTriageQueue` — 카테고리별 `(k+0.5)/size` 위치, RNG 없음
+- [x] 실측: 72장, 인접 동일 카테고리 0건, 최대 연속 1
+- [ ] **판단 필요**: 브라우저 실행 확인은 미수행(자격 증명·배포 접근 없음). tsc·테스트·빌드로만 검증
+

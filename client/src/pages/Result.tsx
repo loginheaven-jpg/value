@@ -186,6 +186,7 @@ export default function Result() {
   const confirmRestart = () => {
     // 다시하기: 이름/이메일은 유지, 진단 데이터만 삭제
     localStorage.removeItem("values-progress");
+    localStorage.removeItem("values-triage");
     localStorage.removeItem("values-final");
     sessionStorage.removeItem("values-saved-to-db");
     // 즉시 페이지 이동 (다이얼로그 상태는 자동으로 unmount됨)

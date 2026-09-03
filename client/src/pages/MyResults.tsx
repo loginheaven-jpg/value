@@ -41,6 +41,7 @@ export default function MyResults() {
   const handleStartNew = () => {
     // 기존 진행 상황 삭제
     localStorage.removeItem("values-progress");
+    localStorage.removeItem("values-triage");
     localStorage.removeItem("values-step3");
     localStorage.removeItem("pairwise-progress");
     localStorage.removeItem("pairwise-results");

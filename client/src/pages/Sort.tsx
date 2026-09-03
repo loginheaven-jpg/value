@@ -1,9 +1,21 @@
 import { Button } from "@/components/ui/button";
+import { CardTriage, TriageRerunPrompt, TriageReview } from "@/components/CardTriage";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ValueCard } from "@/components/ValueCard";
-import { Step, STEP_CONFIGS, Value } from "@/types/values";
+import {
+  buildTriageQueue,
+  resolveTriageOutcome,
+  Step,
+  STEP_CONFIGS,
+  TriageBucket,
+  TriageState,
+  TRIAGE_CEIL,
+  TRIAGE_FLOOR,
+  Value,
+} from "@/types/values";
+import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, Home, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -19,6 +31,18 @@ interface SavedProgress {
   timestamp: number;
 }
 
+/**
+ * 1단계 화면의 세 국면.
+ *   sorting — 카드를 한 장씩 넘기는 중
+ *   review  — 고른 카드를 검토·보충하는 중 (하한 미달이거나 2단계에서 되돌아왔을 때)
+ *   rerun   — 24장을 넘겨 한 번 더 나눌지 묻는 중
+ */
+type TriagePhase = "sorting" | "review" | "rerun";
+
+interface SavedTriage extends TriageState {
+  phase: TriagePhase;
+}
+
 export default function Sort() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -28,6 +52,8 @@ export default function Sort() {
   const [stepHistory, setStepHistory] = useState<Array<{ step: Step; values: Value[]; selected: Set<number> }>>([]);
   const [loading, setLoading] = useState(true);
   const [restored, setRestored] = useState(false);
+  const [triage, setTriage] = useState<TriageState | null>(null);
+  const [triagePhase, setTriagePhase] = useState<TriagePhase>("sorting");
   
   // 슈퍼어드민 체크 (viproject@naver.com)
   const storedEmail = localStorage.getItem("user-email");
@@ -62,6 +88,7 @@ export default function Sort() {
         const hoursSinceLastSave = (Date.now() - progress.timestamp) / (1000 * 60 * 60);
         if (hoursSinceLastSave > 24) {
           localStorage.removeItem("values-progress");
+          localStorage.removeItem("values-triage");
           toast.info("저장된 진행 상황이 만료되어 처음부터 시작합니다.");
           setRestored(true);
           return;
@@ -100,6 +127,53 @@ export default function Sort() {
     }
   }, [allValues, restored]);
 
+  // 1단계 분류 상태 복원 — 없으면 결정론 순서로 큐를 만든다
+  useEffect(() => {
+    if (allValues.length === 0 || !restored || triage) return;
+
+    const saved = localStorage.getItem("values-triage");
+    if (saved) {
+      try {
+        const parsed: SavedTriage = JSON.parse(saved);
+        const hoursSinceLastSave = (Date.now() - parsed.timestamp) / (1000 * 60 * 60);
+        if (hoursSinceLastSave <= 24 && Array.isArray(parsed.queueIds) && parsed.decisions) {
+          // 저장된 큐에 지금 없는 id 가 남아 있으면 그 카드에서 화면이 빈 채로 멈춘다.
+          const known = new Set(allValues.map((v) => v.id));
+          setTriage({ ...parsed, queueIds: parsed.queueIds.filter((id) => known.has(id)) });
+          setTriagePhase(parsed.phase ?? "sorting");
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to restore triage:", e);
+      }
+      localStorage.removeItem("values-triage");
+    }
+
+    setTriage({
+      round: 1,
+      queueIds: buildTriageQueue(allValues),
+      decisions: {},
+      history: [],
+      timestamp: Date.now(),
+    });
+  }, [allValues, restored, triage]);
+
+  // 큐가 빈 채로 sorting 에 머무는 상태는 정상 경로로는 생기지 않는다. 그래도 저장본이
+  // 어긋나면 빈 화면이 되므로 검토 화면으로 되돌린다.
+  useEffect(() => {
+    if (!triage) return;
+    if (currentStep === 1 && triagePhase === "sorting" && triage.queueIds.length === 0) {
+      setTriagePhase("review");
+    }
+  }, [triage, triagePhase, currentStep]);
+
+  // 1단계 분류 상태 저장
+  useEffect(() => {
+    if (!triage) return;
+    const payload: SavedTriage = { ...triage, phase: triagePhase };
+    localStorage.setItem("values-triage", JSON.stringify(payload));
+  }, [triage, triagePhase]);
+
   // 진행 상황 저장
   useEffect(() => {
     if (allValues.length === 0 || !restored) return;
@@ -121,6 +195,121 @@ export default function Sort() {
 
   const config = STEP_CONFIGS[currentStep - 1];
   const canProceed = selectedIds.size === config.to;
+  const isTriage = currentStep === 1;
+
+  // 카드를 내보내는 정본 순서. yes 목록도 이 순서를 따라 뽑아 화면마다 순서가 달라지지 않게 한다.
+  const triageOrder = useMemo(() => buildTriageQueue(allValues), [allValues]);
+  const triageYesIds = useMemo(
+    () => (triage ? triageOrder.filter((id) => triage.decisions[id] === "yes") : []),
+    [triage, triageOrder]
+  );
+  const triageNeed = Math.max(0, TRIAGE_FLOOR - triageYesIds.length);
+  const currentTriageValue = triage
+    ? allValues.find((v) => v.id === triage.queueIds[0])
+    : undefined;
+
+  const proceedToStep2 = (valueIds: number[]) => {
+    const chosen = allValues.filter((v) => valueIds.includes(v.id));
+    // 1단계를 히스토리에 남긴다 — 2단계의 '이전 단계'가 검토 화면으로 돌아오는 근거다.
+    setStepHistory([...stepHistory, { step: 1, values: chosen, selected: new Set<number>() }]);
+    setCurrentStep(2);
+    setAvailableValues(chosen);
+    setSelectedIds(new Set());
+    setTriagePhase("sorting");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /** 한 라운드가 끝났다. 게이트가 시키는 대로 간다. */
+  const applyTriageOutcome = (next: TriageState) => {
+    const outcome = resolveTriageOutcome(next.decisions, next.round);
+    if (outcome.action === "proceed") {
+      setTriage(next);
+      proceedToStep2(outcome.valueIds);
+      return;
+    }
+    if (outcome.action === "rerun") {
+      setTriage(next);
+      setTriagePhase("rerun");
+      return;
+    }
+    // 보충 화면에서 뺀 카드가 원래 있던 더미로 돌아가도록 진입 직전 상태를 남긴다.
+    setTriage({ ...next, topUpOrigin: next.decisions });
+    setTriagePhase("review");
+  };
+
+  const handleTriageDecide = (bucket: TriageBucket) => {
+    if (!triage || triage.queueIds.length === 0) return;
+    const [id, ...rest] = triage.queueIds;
+    const next: TriageState = {
+      ...triage,
+      queueIds: rest,
+      decisions: { ...triage.decisions, [id]: bucket },
+      history: [...triage.history, id],
+      timestamp: Date.now(),
+    };
+    if (rest.length === 0) applyTriageOutcome(next);
+    else setTriage(next);
+  };
+
+  const handleTriageUndo = () => {
+    if (!triage || triage.history.length === 0) return;
+    const id = triage.history[triage.history.length - 1];
+    const decisions = { ...triage.decisions };
+    delete decisions[id];
+    setTriage({
+      ...triage,
+      queueIds: [id, ...triage.queueIds],
+      decisions,
+      history: triage.history.slice(0, -1),
+      timestamp: Date.now(),
+    });
+  };
+
+  const handleRerunAccept = () => {
+    if (!triage) return;
+    // yes 만 다시 큐에 넣는다. no·maybe 판단은 라운드를 넘어 누적된다.
+    const decisions = { ...triage.decisions };
+    triageYesIds.forEach((id) => delete decisions[id]);
+    setTriage({
+      round: triage.round + 1,
+      queueIds: triageYesIds,
+      decisions,
+      history: [],
+      timestamp: Date.now(),
+    });
+    setTriagePhase("sorting");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleRerunDecline = () => proceedToStep2(triageYesIds);
+
+  const handleTriageToggle = (id: number) => {
+    if (!triage) return;
+    const decisions = { ...triage.decisions };
+    if (decisions[id] === "yes") {
+      const origin = triage.topUpOrigin?.[id];
+      decisions[id] = origin && origin !== "yes" ? origin : "no";
+    } else {
+      decisions[id] = "yes";
+    }
+    setTriage({ ...triage, decisions, timestamp: Date.now() });
+  };
+
+  /**
+   * 검토 화면의 출구도 정상 경로와 같은 게이트를 통과한다.
+   * 이 한 줄이 없으면 상한(24장)이 보충 경로에만 없어, 같은 장수가 경로에 따라
+   * 통과하기도 하고 막히기도 한다.
+   */
+  const handleTriageConfirm = () => {
+    if (!triage) return;
+    const outcome = resolveTriageOutcome(triage.decisions, triage.round);
+    if (outcome.action === "topUp") return;
+    if (outcome.action === "rerun") {
+      setTriagePhase("rerun");
+      return;
+    }
+    proceedToStep2(outcome.valueIds);
+  };
 
   // 선택된 카드와 미선택 카드 분리
   const selectedValues = availableValues.filter((v) => selectedIds.has(v.id));
@@ -153,6 +342,7 @@ export default function Sort() {
       localStorage.setItem("values-step3", JSON.stringify(selectedValues));
       // 진행 상황 삭제 (쌍대비교로 넘어가므로)
       localStorage.removeItem("values-progress");
+      localStorage.removeItem("values-triage");
       setLocation("/step4");
     } else {
       // 현재 상태를 히스토리에 저장
@@ -179,6 +369,8 @@ export default function Sort() {
     // 히스토리에서 이전 상태 복원
     const previous = stepHistory[stepHistory.length - 1];
     setCurrentStep(previous.step);
+    // 1단계는 빈 큐로 되돌아간다. 그대로 두면 게이트가 다시 돌아 2단계로 튕겨 나간다.
+    if (previous.step === 1) setTriagePhase("review");
     setAvailableValues(previous.values);
     setSelectedIds(previous.selected);
     setStepHistory(stepHistory.slice(0, -1));
@@ -247,21 +439,67 @@ export default function Sort() {
               {config.title}
             </h2>
             <p className="text-sm md:text-base text-muted-foreground">
-              {config.instruction}
+              {isTriage && triagePhase === "review"
+                ? "고른 카드를 확인해 주세요. 더하거나 빼실 수 있습니다."
+                : isTriage && triagePhase === "rerun"
+                  ? "고르신 카드가 조금 많습니다."
+                  : config.instruction}
             </p>
-            <div className="flex items-center justify-center gap-4 text-sm">
-              <span className="text-foreground font-medium">
-                선택됨: <span className="text-primary text-2xl font-bold">{selectedIds.size}</span> / {config.to}
-              </span>
-            </div>
+            {/* 1단계에는 목표 개수가 없다. 분류 화면이 제 진행 상황을 스스로 보여준다. */}
+            {!isTriage && (
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <span className="text-foreground font-medium">
+                  선택됨: <span className="text-primary text-2xl font-bold">{selectedIds.size}</span> / {config.to}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* 메인 컨텐츠 */}
       <main className="container py-6">
+        {/* 1단계 — 한 장씩 나누기 */}
+        {isTriage && triage && (
+          <>
+            {triagePhase === "sorting" && currentTriageValue && (
+              <CardTriage
+                value={currentTriageValue}
+                position={triage.history.length + 1}
+                total={triage.history.length + triage.queueIds.length}
+                round={triage.round}
+                yesCount={triageYesIds.length}
+                canUndo={triage.history.length > 0}
+                onDecide={handleTriageDecide}
+                onUndo={handleTriageUndo}
+              />
+            )}
+
+            {triagePhase === "rerun" && (
+              <TriageRerunPrompt
+                yesCount={triageYesIds.length}
+                message="이 카드들만 한 번 더 나눠 볼까요? 그대로 진행하셔도 괜찮습니다."
+                onAccept={handleRerunAccept}
+                onDecline={handleRerunDecline}
+              />
+            )}
+
+            {triagePhase === "review" && (
+              <TriageReview
+                allValues={allValues}
+                decisions={triage.decisions}
+                yesIds={triageYesIds}
+                need={triageNeed}
+                overCeil={triageYesIds.length > TRIAGE_CEIL}
+                onToggle={handleTriageToggle}
+                onConfirm={handleTriageConfirm}
+              />
+            )}
+          </>
+        )}
+
         {/* 선택된 카드 영역 */}
-        {selectedValues.length > 0 && (
+        {!isTriage && selectedValues.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-primary">
@@ -285,7 +523,7 @@ export default function Sort() {
         )}
 
         {/* 미선택 카드 영역 */}
-        {unselectedValues.length > 0 && (
+        {!isTriage && unselectedValues.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-foreground">
@@ -314,7 +552,7 @@ export default function Sort() {
         )}
 
         {/* 모두 선택한 경우 안내 */}
-        {unselectedValues.length === 0 && selectedValues.length > 0 && (
+        {!isTriage && unselectedValues.length === 0 && selectedValues.length > 0 && (
           <div className="text-center py-8">
             <div className="inline-block px-6 py-3 bg-primary/10 rounded-lg">
               <p className="text-primary font-semibold">
@@ -325,8 +563,8 @@ export default function Sort() {
         )}
       </main>
 
-      {/* Floating 버튼 영역 */}
-      <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-3">
+      {/* Floating 버튼 영역 — 1단계는 화면이 제 버튼을 갖는다 */}
+      <div className={cn("fixed bottom-6 right-6 z-30 flex-col gap-3", isTriage ? "hidden" : "flex")}>
         {/* 이전 단계 버튼 - 2단계부터 표시 */}
         {currentStep > 1 && (
           <Button

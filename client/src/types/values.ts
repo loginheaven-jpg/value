@@ -20,15 +20,22 @@ export interface StepConfig {
   instruction: string;
   from: number;
   to: number;
+  /**
+   * 진행바에서 개수 대신 보여줄 문자열. 1단계는 분류라 목표 개수가 없고,
+   * 4단계는 쌍대비교라 '3개'가 그 단계의 일을 설명하지 못한다.
+   * `to` 는 건드리지 않는다 — Sort 의 선택 게이트와 기존 테스트가 그 값을 읽는다.
+   */
+  barLabel?: string;
 }
 
 export const STEP_CONFIGS: StepConfig[] = [
   {
     step: 1,
-    title: "1단계: 첫 번째 선택",
-    instruction: "'마음이 더 끌리는' 카드 20개를 선택해주세요. '그래야만하지, 이게 중요한 게 맞지' 이런 생각은 내려 놓으세요.\n(한번 클릭: 선택, 두번 클릭: 해제)",
+    title: "1단계: 첫인상으로 나누기",
+    instruction: "한 장씩 보여드립니다. 오래 생각하지 마세요. '그래야만 하지, 이게 중요한 게 맞지' 같은 생각은 내려놓고, 마음이 반응하는 대로 나누시면 됩니다.",
     from: 72,
     to: 20,
+    barLabel: "분류",
   },
   {
     step: 2,
@@ -46,10 +53,11 @@ export const STEP_CONFIGS: StepConfig[] = [
   },
   {
     step: 4,
-    title: "4단계: 최종 선택",
-    instruction: "마지막으로, 당신의 삶을 이끄는 핵심 가치 3개를 선택해주세요.",
+    title: "4단계: 쌍대비교",
+    instruction: "두 가지 중 하나를 선택한다면? 머리가 아닌 가슴으로, 직관적으로 선택해주세요. 정답은 없습니다.",
     from: 5,
     to: 3,
+    barLabel: "비교",
   },
   {
     step: 5,
@@ -59,3 +67,99 @@ export const STEP_CONFIGS: StepConfig[] = [
     to: 3,
   },
 ];
+
+// ── 1단계 분류(triage) ──────────────────────────────────────────────────────
+// 72장을 한 화면에 펼치고 "정확히 20장"을 요구하던 것을 한 장씩 세 더미로 나누는 방식으로 바꾼다.
+// 동시 비교가 순차 반응으로 바뀌고, 고르는 일이 반응하는 일이 된다.
+
+export type TriageBucket = "yes" | "maybe" | "no";
+
+export interface TriageState {
+  /** 1부터. 재분류(yes 과다)마다 1씩 오른다. */
+  round: number;
+  /** 아직 판단하지 않은 카드. 1라운드 진입 시 한 번 섞고 이후 재정렬하지 않는다. */
+  queueIds: number[];
+  /** 카드 id → 더미. 라운드를 넘어 **누적**된다. */
+  decisions: Record<number, TriageBucket>;
+  /** 되돌리기용. 현재 라운드에서 판단한 순서이며 라운드 경계를 넘지 않는다. */
+  history: number[];
+  /** 보충 선택 진입 직전의 더미. 그 화면에서 선택을 해제하면 여기로 되돌린다. */
+  topUpOrigin?: Record<number, TriageBucket>;
+  timestamp: number;
+}
+
+export type TriageOutcome =
+  | { action: "proceed"; valueIds: number[] }
+  | { action: "rerun"; source: "yes"; message: string }
+  | { action: "topUp"; need: number; message: string };
+
+/**
+ * 2단계는 정확히 10장을 요구한다(`STEP_CONFIGS[1].to`). 후보가 10장이면 선택이 아니라
+ * 전원 통과가 되고 11장이면 사실상 1장 버리기다. 최소한의 선택 여지를 남기는 하한이 12다.
+ *
+ * **불변식: 후보가 12장 미만이면 어떤 경로로도 2단계로 보내지 않는다.**
+ * 이 하한을 어기면 2단계의 '다음' 버튼이 렌더되지 않아 화면이 잠긴다.
+ */
+export const TRIAGE_FLOOR = 12;
+/** 이 수를 넘으면 한 번 더 나누기를 권한다. 강제는 아니다. */
+export const TRIAGE_CEIL = 24;
+/** 재분류 상한. 이 라운드에 이르면 과다여도 그대로 보낸다(무한 루프 방지). */
+export const TRIAGE_MAX_ROUND = 3;
+
+export function resolveTriageOutcome(
+  decisions: Record<number, TriageBucket>,
+  round: number
+): TriageOutcome {
+  const idsOf = (bucket: TriageBucket): number[] =>
+    Object.keys(decisions)
+      .map(Number)
+      .filter((id) => decisions[id] === bucket);
+
+  const yes = idsOf("yes");
+
+  // 하한 검사가 먼저다. 라운드 상한이 이 검사를 건너뛰면 잠긴 화면으로 보내게 된다.
+  if (yes.length < TRIAGE_FLOOR) {
+    return {
+      action: "topUp",
+      need: TRIAGE_FLOOR - yes.length,
+      message: "조금만 더 골라 주세요.",
+    };
+  }
+
+  if (yes.length > TRIAGE_CEIL && round < TRIAGE_MAX_ROUND) {
+    return {
+      action: "rerun",
+      source: "yes",
+      message: "고르신 카드가 많군요. 이 카드들만 한 번 더 나눠 볼까요?",
+    };
+  }
+
+  return { action: "proceed", valueIds: yes };
+}
+
+/**
+ * 1단계에 카드를 내보낼 순서. **무작위가 아니다.**
+ *
+ * 같은 카테고리 카드가 연달아 나오면 판단이 무뎌진다('관계'는 14장이다).
+ * 카테고리별로 `(k + 0.5) / size` 위치를 매겨 그 순서로 펴면, 큰 묶음은 촘촘히
+ * 작은 묶음은 성기게 놓여 전 구간에 흩어진다. RNG 가 없으므로 배열을 테스트가 잰다.
+ */
+export function buildTriageQueue(values: Value[]): number[] {
+  const byCategory = new Map<string, Value[]>();
+  for (const value of values) {
+    const list = byCategory.get(value.category);
+    if (list) list.push(value);
+    else byCategory.set(value.category, [value]);
+  }
+
+  // tsconfig 에 target 이 없어 Map 순회에 for-of 를 쓸 수 없다(TS2802). Array.from 으로 편다.
+  const placed: Array<{ pos: number; id: number }> = [];
+  Array.from(byCategory.values()).forEach((list) => {
+    list.forEach((value, k) => placed.push({ pos: (k + 0.5) / list.length, id: value.id }));
+  });
+
+  // 위치가 같으면 id 로 갈라 안정 정렬을 보장한다. 같은 입력이면 언제나 같은 배열이다.
+  placed.sort((a, b) => a.pos - b.pos || a.id - b.id);
+  return placed.map((entry) => entry.id);
+}
+

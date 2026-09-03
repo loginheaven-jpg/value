@@ -40,7 +40,9 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
               {config.step}
             </div>
             <span className="text-xs font-medium hidden sm:inline">
-              {config.to}개
+              {/* 1단계는 목표 개수가 없고 4단계는 쌍대비교다. '20개'·'3개'가 그 단계의 일을
+                  설명하지 못한다. to 는 그대로 두고 표시만 갈아 끼운다. */}
+              {config.barLabel ?? `${config.to}개`}
             </span>
           </div>
         ))}

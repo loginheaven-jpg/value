@@ -28,13 +28,13 @@ export default function PairwiseComparison() {
     // localStorage에서 5개 카드 로드
     const saved = localStorage.getItem('values-step3');
     if (!saved) {
-      setLocation('/step3');
+      setLocation('/sort');
       return;
     }
 
     const parsed: Value[] = JSON.parse(saved);
     if (parsed.length !== 5) {
-      setLocation('/step3');
+      setLocation('/sort');
       return;
     }
 
@@ -112,7 +112,7 @@ export default function PairwiseComparison() {
     } else {
       // 첫 비교에서 뒤로가기 = Step3으로
       localStorage.removeItem('pairwise-progress');
-      setLocation('/step3');
+      setLocation('/sort');
     }
   };
 
