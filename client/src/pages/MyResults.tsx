@@ -6,13 +6,15 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
+// 이력 조회가 돌려받는 행. `email` 은 호출자가 방금 넘긴 값이라 서버가 되돌려 주지 않는다
+//   (Phase 39-A — server/db.ts 의 투영 축소). 화면에서도 쓰이지 않았다.
 interface AssessmentResult {
   id: number;
   name: string;
-  email: string;
   value1: string;
   value2: string;
   value3: string;
+  customValue: string | null;
   createdAt: Date;
 }
 

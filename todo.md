@@ -358,3 +358,12 @@
 - [x] 레거시 부활 방지 회귀 테스트
 - [x] `docs/06` §2.1을 결정 내용으로 갱신
 
+## Phase 39-A: 관리자 API 서버 잠금 (완료)
+- [x] `values.getAll`·`delete`·`deleteMany` → `adminProcedure`
+- [x] `Admin.tsx`에 로그인·권한 게이트 (가드가 하나도 없었다)
+- [x] `getLoginUrl()`이 환경변수 부재 시 TypeError 대신 null 반환
+- [x] `getByEmail` 반환에서 이메일 컬럼 제거 (§6.1 결정 전 완화)
+- [x] 회귀 4종 + 음성 대조
+- [x] `docs/04` API 표, `docs/06` §2.2 갱신
+- [ ] **미이행**: 실제 Manus OAuth 로그인 1회 확인 — 자격 증명이 없어 수행 불가
+

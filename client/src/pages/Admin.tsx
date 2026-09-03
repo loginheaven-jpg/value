@@ -20,6 +20,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { getLoginUrl } from "@/const";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Home, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -33,8 +35,15 @@ export default function Admin() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'single' | 'multiple', ids: number[] }>({ type: 'single', ids: [] });
 
-  // tRPC query
-  const { data: assessments, isLoading, error, refetch } = trpc.values.getAll.useQuery();
+  // 신원을 먼저 본다. adminProcedure 는 미로그인과 비관리자에 똑같이 FORBIDDEN 을 던지므로
+  //   오류 코드로는 둘을 가를 수 없다(server/_core/trpc.ts). auth.me 로 갈라 안내를 다르게 준다.
+  const { user, loading: authLoading } = useAuth();
+  const isAdmin = user?.role === "admin";
+
+  // 관리자로 확인되기 전에는 조회를 켜지 않는다 — 켜면 FORBIDDEN 오류 화면이 먼저 뜬다.
+  const { data: assessments, isLoading, error, refetch } = trpc.values.getAll.useQuery(undefined, {
+    enabled: isAdmin,
+  });
   
   // tRPC mutations
   const deleteMutation = trpc.values.delete.useMutation({
@@ -114,6 +123,49 @@ export default function Admin() {
 
   const isAllSelected = filteredAssessments && filteredAssessments.length > 0 && 
     filteredAssessments.every((a: any) => selectedIds.has(a.id));
+
+  // ── 게이트 ─────────────────────────────────────────────────────────────
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    const loginUrl = user ? null : getLoginUrl();
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center space-y-4">
+          <h1 className="text-2xl font-bold">
+            {user ? "접근 권한이 없습니다" : "로그인이 필요합니다"}
+          </h1>
+          <p className="text-muted-foreground">
+            {user
+              ? "이 화면은 운영자만 볼 수 있습니다."
+              : "참가자 결과를 보려면 운영자 계정으로 로그인해 주세요."}
+          </p>
+          <div className="flex gap-2 justify-center pt-2">
+            {loginUrl && (
+              <Button onClick={() => { window.location.href = loginUrl; }}>
+                로그인
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setLocation("/")} className="gap-2">
+              <Home className="w-4 h-4" />
+              홈으로
+            </Button>
+          </div>
+          {!user && !loginUrl && (
+            <p className="text-sm text-muted-foreground">
+              로그인 주소가 설정되지 않았습니다. 관리자에게 문의해 주세요.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">

@@ -37,11 +37,11 @@ API의 타입 원본은 `server/routers.ts`입니다. 프런트엔드는 `client
 |---|---|---|---|---|
 | `auth.me` | query | 없음 | 현재 OAuth 사용자 반환 | public |
 | `auth.logout` | mutation | 없음 | 세션 쿠키 삭제 | public |
-| `values.save` | mutation | 이름, 이메일, 가치 3개, 선택적 customValue | 결과 레코드 생성 | **public** |
-| `values.getAll` | query | 없음 | 전체 결과 최신순 반환 | **public — 위험** |
-| `values.getByEmail` | query | 이메일 | 이메일 기준 결과 반환 | **public — 위험** |
-| `values.delete` | mutation | id | 단일 결과 삭제 | **public — 위험** |
-| `values.deleteMany` | mutation | id 배열 | 다중 결과 삭제 | **public — 위험** |
+| `values.save` | mutation | 이름, 이메일, 가치 3개, 선택적 customValue | 결과 레코드 생성 | **public** — 비로그인 참여자 흐름의 전제. §6.1 결정 대상 |
+| `values.getAll` | query | 없음 | 전체 결과 최신순 반환 | **admin** (Phase 39-A) |
+| `values.getByEmail` | query | 이메일 | 이메일 기준 결과 반환. **이메일 컬럼은 되돌려 주지 않음** | **public** — 소유권 검증은 §6.1 결정 대상 |
+| `values.delete` | mutation | id | 단일 결과 삭제 | **admin** (Phase 39-A) |
+| `values.deleteMany` | mutation | id 배열 | 다중 결과 삭제 | **admin** (Phase 39-A) |
 
 ## 3. API 입력 검증
 

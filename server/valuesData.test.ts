@@ -121,3 +121,41 @@ describe("73번 카드 레거시가 되살아나지 않았다", () => {
   });
 });
 
+// ── Phase 39-A: 관리자 API 서버 잠금 ────────────────────────────────────────
+// /admin 은 가드가 하나도 없이 마운트 즉시 getAll 을 불렀다. getAll 은 전 참여자의
+// 이름·이메일·가치를 돌려주므로 주소만 알면 열렸다.
+describe("관리자 API 가 서버에서 잠겨 있다", () => {
+  const routers = () => readFile(new URL("./routers.ts", import.meta.url), "utf8");
+
+  it("getAll·delete·deleteMany 가 adminProcedure 다", async () => {
+    const source = await routers();
+    for (const name of ["getAll", "delete", "deleteMany"]) {
+      expect(source, name).toContain(name + ": adminProcedure");
+      expect(source, name).not.toContain(name + ": publicProcedure");
+    }
+  });
+
+  // 참여자가 세션 없이 부르는 두 프로시저다. 잠그면 앱이 죽으므로 의도적으로 열려 있고,
+  // 그 사실이 잊히지 않게 여기 못 박는다. 소유권 검증은 §6.1 결정 사안이다.
+  it("save·getByEmail 은 의도적으로 공개다", async () => {
+    const source = await routers();
+    expect(source).toContain("save: publicProcedure");
+    expect(source).toContain("getByEmail: publicProcedure");
+  });
+
+  it("getByEmail 이 이메일을 되돌려 주지 않는다", async () => {
+    const source = await readFile(new URL("./db.ts", import.meta.url), "utf8");
+    const fn = source.slice(source.indexOf("getValuesAssessmentsByEmail"));
+    const body = fn.split(/^}/m)[0];
+    expect(body).not.toMatch(/email:\s*valuesAssessments\.email/);
+    expect(body).toContain("id: valuesAssessments.id");
+  });
+
+  it("Admin 화면에 로그인·권한 게이트가 있다", async () => {
+    const source = await readFile(new URL("../client/src/pages/Admin.tsx", import.meta.url), "utf8");
+    expect(source).toContain("useAuth");
+    expect(source).toContain('user?.role === "admin"');
+    expect(source).toContain("enabled: isAdmin");
+  });
+});
+

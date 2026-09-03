@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { saveValuesAssessment, getAllValuesAssessments, getValuesAssessmentsByEmail, deleteValuesAssessment, deleteValuesAssessments } from "./db";
 
@@ -48,13 +48,18 @@ export const appRouter = router({
     /**
      * Get all values assessment results (admin)
      */
-    getAll: publicProcedure
+    getAll: adminProcedure
       .query(async () => {
         return await getAllValuesAssessments();
       }),
 
     /**
      * Get assessments by email
+     *
+     * **아직 공개 프로시저다.** 참여자가 세션 없이 부르는 유일한 조회라 잠그면 이력 화면이 죽는다.
+     * 소유권 검증 방식(이메일 인증 링크·조회 토큰·로그인 강제)은 개인정보 수집 방식 결정과 함께
+     * 정해야 한다(UPGRADE_PLAN §6.1). 그때까지의 완화로 반환 컬럼을 최소로 좁혀 두었다
+     * (server/db.ts — 이메일은 되돌려 주지 않는다).
      */
     getByEmail: publicProcedure
       .input(z.object({ email: z.string().email() }))
@@ -65,7 +70,7 @@ export const appRouter = router({
     /**
      * Delete a single assessment (admin)
      */
-    delete: publicProcedure
+    delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteValuesAssessment(input.id);
@@ -75,7 +80,7 @@ export const appRouter = router({
     /**
      * Delete multiple assessments (admin)
      */
-    deleteMany: publicProcedure
+    deleteMany: adminProcedure
       .input(z.object({ ids: z.array(z.number()) }))
       .mutation(async ({ input }) => {
         await deleteValuesAssessments(input.ids);

@@ -123,7 +123,22 @@ export async function getValuesAssessmentsByEmail(email: string) {
     throw new Error("Database not available");
   }
 
-  return await db.select().from(valuesAssessments).where(eq(valuesAssessments.email, email));
+  // 무투영 select() 는 이메일까지 되돌려 준다. 호출자가 방금 넘긴 값이라 되돌릴 이유가 없다.
+  //   행 id 는 남긴다 — delete/deleteMany 가 adminProcedure 가 된 뒤로 id 는 더 이상 권한이
+  //   아니고, 이력 화면이 React key 와 펼침 상태로 쓴다.
+  //   소유권 검증 자체는 §6.1 결정이 필요하다. 여기서는 나가는 컬럼만 줄인다.
+  return await db
+    .select({
+      id: valuesAssessments.id,
+      name: valuesAssessments.name,
+      value1: valuesAssessments.value1,
+      value2: valuesAssessments.value2,
+      value3: valuesAssessments.value3,
+      customValue: valuesAssessments.customValue,
+      createdAt: valuesAssessments.createdAt,
+    })
+    .from(valuesAssessments)
+    .where(eq(valuesAssessments.email, email));
 }
 
 /**

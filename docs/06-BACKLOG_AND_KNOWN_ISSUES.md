@@ -27,12 +27,15 @@
 
 ### 2.2 관리자 API 권한 보호
 
-| 위험 | 현재 상태 | 권장 조치 |
+| 위험 | 상태 | 조치 |
 |---|---|---|
-| 전체 결과 조회 | `values.getAll`이 public | `adminProcedure` 적용 |
-| 단일·일괄 삭제 | `values.delete`, `deleteMany`가 public | `adminProcedure` 적용, 감사 로그 추가 |
-| 결과 이력 조회 | 이메일만 알면 `getByEmail` 호출 가능 | 로그인 소유권 또는 이메일 인증 구현 |
-| 관리자 링크 | localStorage 이메일 비교 | UI 보조 수단으로만 유지, 서버 권한에 의존 |
+| 전체 결과 조회 | **해소** (Phase 39-A) | `values.getAll` → `adminProcedure` |
+| 단일·일괄 삭제 | **해소** (Phase 39-A) | `delete`·`deleteMany` → `adminProcedure`. 감사 로그는 미구현 |
+| `/admin` 화면 | **해소** (Phase 39-A) | 가드가 하나도 없었다. `auth.me` 기반 로그인·권한 게이트 추가 |
+| 결과 이력 조회 | **미해소** | `getByEmail`은 참여자가 세션 없이 부른다. 소유권 검증 방식은 §6.1 결정 사안. 완화로 이메일 컬럼 반환을 제거 |
+| 결과 저장 | **미해소** | `values.save`가 미인증 쓰기다. 잠그면 앱이 죽는다. §6.1과 함께 다뤄야 한다 |
+
+**운영자 권한 부여 방법** — 수동 SQL이 필요 없다. `server/db.ts`의 upsert가 `user.openId === ENV.ownerOpenId`이면 로그인 시 자동으로 `role='admin'`을 넣는다. 환경변수 `OWNER_OPEN_ID`를 운영자 openId로 두고 한 번 로그인하면 된다.
 
 ## 3. 기능 백로그
 
