@@ -163,3 +163,55 @@ export function buildTriageQueue(values: Value[]): number[] {
   return placed.map((entry) => entry.id);
 }
 
+// ── 분류 상태 전이 ──────────────────────────────────────────────────────────
+// 화면 밖에 둔다. 전이가 컴포넌트 안에 있으면 렌더러 없이는 잴 수 없고,
+// 원본 §9 Phase 40 의 회귀 기준('후보군이 yes 더미와 일치'·'되돌리기가 직전 판단을 취소')이
+// 검증 불가가 된다. `timestamp` 는 건드리지 않는다 — 시각은 호출자가 찍는다.
+
+/** 큐 맨 앞 카드를 한 더미로 보낸다. */
+export function decideCard(state: TriageState, bucket: TriageBucket): TriageState {
+  if (state.queueIds.length === 0) return state;
+  const [id, ...rest] = state.queueIds;
+  return {
+    ...state,
+    queueIds: rest,
+    decisions: { ...state.decisions, [id]: bucket },
+    history: [...state.history, id],
+  };
+}
+
+/**
+ * 직전 판단을 취소한다. 카드는 큐 맨 앞으로 돌아오고 판단은 지워진다.
+ * `history` 는 라운드마다 비므로 되돌리기는 라운드 경계를 넘지 않는다 —
+ * 2라운드에서 아무리 되돌려도 1라운드의 no·maybe 판단은 남는다.
+ */
+export function undoDecision(state: TriageState): TriageState {
+  if (state.history.length === 0) return state;
+  const id = state.history[state.history.length - 1];
+  const decisions = { ...state.decisions };
+  delete decisions[id];
+  return {
+    ...state,
+    queueIds: [id, ...state.queueIds],
+    decisions,
+    history: state.history.slice(0, -1),
+  };
+}
+
+/**
+ * yes 더미만 다시 큐에 올려 한 라운드를 더 돈다.
+ * `order` 는 정본 배열(`buildTriageQueue`)이다. 재분류 때도 같은 순서를 쓴다.
+ */
+export function startRerun(state: TriageState, order: number[]): TriageState {
+  const yesIds = order.filter((id) => state.decisions[id] === "yes");
+  const decisions = { ...state.decisions };
+  yesIds.forEach((id) => delete decisions[id]);
+  return {
+    round: state.round + 1,
+    queueIds: yesIds,
+    decisions,
+    history: [],
+    timestamp: state.timestamp,
+  };
+}
+

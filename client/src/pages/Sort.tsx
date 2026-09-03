@@ -4,7 +4,10 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { ValueCard } from "@/components/ValueCard";
 import {
   buildTriageQueue,
+  decideCard,
   resolveTriageOutcome,
+  startRerun,
+  undoDecision,
   Step,
   STEP_CONFIGS,
   TriageBucket,
@@ -239,44 +242,20 @@ export default function Sort() {
 
   const handleTriageDecide = (bucket: TriageBucket) => {
     if (!triage || triage.queueIds.length === 0) return;
-    const [id, ...rest] = triage.queueIds;
-    const next: TriageState = {
-      ...triage,
-      queueIds: rest,
-      decisions: { ...triage.decisions, [id]: bucket },
-      history: [...triage.history, id],
-      timestamp: Date.now(),
-    };
-    if (rest.length === 0) applyTriageOutcome(next);
+    const next: TriageState = { ...decideCard(triage, bucket), timestamp: Date.now() };
+    if (next.queueIds.length === 0) applyTriageOutcome(next);
     else setTriage(next);
   };
 
   const handleTriageUndo = () => {
-    if (!triage || triage.history.length === 0) return;
-    const id = triage.history[triage.history.length - 1];
-    const decisions = { ...triage.decisions };
-    delete decisions[id];
-    setTriage({
-      ...triage,
-      queueIds: [id, ...triage.queueIds],
-      decisions,
-      history: triage.history.slice(0, -1),
-      timestamp: Date.now(),
-    });
+    if (!triage) return;
+    setTriage({ ...undoDecision(triage), timestamp: Date.now() });
   };
 
   const handleRerunAccept = () => {
     if (!triage) return;
-    // yes 만 다시 큐에 넣는다. no·maybe 판단은 라운드를 넘어 누적된다.
-    const decisions = { ...triage.decisions };
-    triageYesIds.forEach((id) => delete decisions[id]);
-    setTriage({
-      round: triage.round + 1,
-      queueIds: triageYesIds,
-      decisions,
-      history: [],
-      timestamp: Date.now(),
-    });
+    // yes 만 다시 큐에 올린다. no·maybe 판단은 라운드를 넘어 누적된다.
+    setTriage({ ...startRerun(triage, triageOrder), timestamp: Date.now() });
     setTriagePhase("sorting");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

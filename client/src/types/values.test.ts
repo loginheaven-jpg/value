@@ -2,12 +2,16 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import {
   buildTriageQueue,
+  decideCard,
   resolveTriageOutcome,
+  startRerun,
+  undoDecision,
   STEP_CONFIGS,
   TRIAGE_CEIL,
   TRIAGE_FLOOR,
   TRIAGE_MAX_ROUND,
   type TriageBucket,
+  type TriageState,
   type Value,
 } from "./values";
 
@@ -182,5 +186,97 @@ describe("1단계 카드 순서 — buildTriageQueue", () => {
     const onlyOne = values.filter((v) => v.category === "관계");
     expect(buildTriageQueue(onlyOne)).toHaveLength(onlyOne.length);
     expect(buildTriageQueue([])).toEqual([]);
+  });
+});
+
+/**
+ * 원본 §9 Phase 40 이 요구했으나 지시서 개정 과정에서 소실된 회귀 기준(G-3).
+ *   ① 72장 완주 후 2단계 후보군이 yes 더미와 일치한다
+ *   ② 되돌리기가 직전 판단을 정확히 취소한다
+ *   ③ 2라운드에서 되돌려도 1라운드 판단이 사라지지 않는다
+ */
+describe("분류 상태 전이 — 소실된 회귀 기준 복구 (G-3)", () => {
+  const load = async (): Promise<Value[]> =>
+    JSON.parse(
+      await readFile(new URL("../../public/values.json", import.meta.url), "utf8")
+    ) as Value[];
+
+  const fresh = (queueIds: number[]): TriageState => ({
+    round: 1,
+    queueIds,
+    decisions: {},
+    history: [],
+    timestamp: 0,
+  });
+
+  it("72장을 완주하면 2단계 후보군이 yes 더미와 정확히 일치한다", async () => {
+    const values = await load();
+    const order = buildTriageQueue(values);
+
+    // 3장마다 하나씩 yes — 24장이 되어 상한을 넘지 않는다.
+    let state = fresh(order);
+    const expectedYes: number[] = [];
+    order.forEach((id, i) => {
+      const bucket: TriageBucket = i % 3 === 0 ? "yes" : i % 3 === 1 ? "maybe" : "no";
+      if (bucket === "yes") expectedYes.push(id);
+      state = decideCard(state, bucket);
+    });
+
+    expect(state.queueIds).toEqual([]);
+    expect(state.history).toHaveLength(72);
+    expect(expectedYes).toHaveLength(24);
+
+    const outcome = resolveTriageOutcome(state.decisions, state.round);
+    expect(outcome.action).toBe("proceed");
+    if (outcome.action === "proceed") {
+      expect([...outcome.valueIds].sort((a, b) => a - b)).toEqual(
+        [...expectedYes].sort((a, b) => a - b)
+      );
+    }
+  });
+
+  it("되돌리기가 직전 판단을 정확히 취소한다", () => {
+    const before = decideCard(decideCard(fresh([7, 8, 9]), "yes"), "no");
+    expect(before.decisions).toEqual({ 7: "yes", 8: "no" });
+
+    const after = undoDecision(before);
+    expect(after.queueIds).toEqual([8, 9]); // 카드가 큐 맨 앞으로 돌아온다
+    expect(after.decisions).toEqual({ 7: "yes" }); // 그 판단만 지워진다
+    expect(after.history).toEqual([7]);
+
+    // 한 번 더 되돌리면 처음 상태다.
+    const start = undoDecision(after);
+    expect(start.queueIds).toEqual([7, 8, 9]);
+    expect(start.decisions).toEqual({});
+    expect(start.history).toEqual([]);
+
+    // 되돌릴 것이 없으면 아무 일도 없다.
+    expect(undoDecision(start)).toEqual(start);
+  });
+
+  it("2라운드에서 되돌려도 1라운드 판단이 사라지지 않는다", () => {
+    // 1라운드: 1·2 는 yes, 3 은 no.
+    let state = fresh([1, 2, 3]);
+    state = decideCard(state, "yes");
+    state = decideCard(state, "yes");
+    state = decideCard(state, "no");
+
+    // 2라운드는 yes 만 다시 돈다. no 판단은 누적된 채 남는다.
+    state = startRerun(state, [1, 2, 3]);
+    expect(state.round).toBe(2);
+    expect(state.queueIds).toEqual([1, 2]);
+    expect(state.decisions).toEqual({ 3: "no" });
+    expect(state.history).toEqual([]); // 되돌리기는 라운드 경계를 넘지 않는다
+
+    state = decideCard(state, "no");
+    // 되돌릴 수 있는 것은 이번 라운드 판단뿐이다.
+    const undone = undoDecision(undoDecision(state));
+    expect(undone.decisions).toEqual({ 3: "no" }); // 1라운드 판단은 그대로다
+    expect(undone.queueIds).toEqual([1, 2]);
+  });
+
+  it("빈 큐에 판단을 밀어 넣어도 상태가 흔들리지 않는다", () => {
+    const empty = fresh([]);
+    expect(decideCard(empty, "yes")).toEqual(empty);
   });
 });
