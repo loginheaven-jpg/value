@@ -6,7 +6,10 @@ import {
   buildTriageQueue,
   decideCard,
   resolveTriageOutcome,
+  routeAfterRound,
+  sanitizeTriage,
   startRerun,
+  triageFromLegacyProgress,
   undoDecision,
   Step,
   STEP_CONFIGS,
@@ -134,15 +137,21 @@ export default function Sort() {
   useEffect(() => {
     if (allValues.length === 0 || !restored || triage) return;
 
+    const knownIds = allValues.map((v) => v.id);
+
     const saved = localStorage.getItem("values-triage");
     if (saved) {
       try {
         const parsed: SavedTriage = JSON.parse(saved);
         const hoursSinceLastSave = (Date.now() - parsed.timestamp) / (1000 * 60 * 60);
         if (hoursSinceLastSave <= 24 && Array.isArray(parsed.queueIds) && parsed.decisions) {
-          // 저장된 큐에 지금 없는 id 가 남아 있으면 그 카드에서 화면이 빈 채로 멈춘다.
-          const known = new Set(allValues.map((v) => v.id));
-          setTriage({ ...parsed, queueIds: parsed.queueIds.filter((id) => known.has(id)) });
+          // 지금 없는 id 를 판단·큐·이력 전부에서 걷어낸다. queueIds 만 거르면 게이트가 세는
+          // 장수와 2단계가 받는 장수가 어긋나 잠긴 화면이 된다.
+          //
+          // timestamp 를 다시 찍는 이유: values-progress 는 페이지를 열기만 해도 갱신되는데
+          // 이쪽만 분류를 만져야 갱신되면, progress 는 신선하고 triage 만 만료되어 1단계
+          // 판단이 통째로 사라진다. 두 저장본의 시계를 맞춘다.
+          setTriage({ ...sanitizeTriage(parsed, knownIds), timestamp: Date.now() });
           setTriagePhase(parsed.phase ?? "sorting");
           return;
         }
@@ -152,6 +161,23 @@ export default function Sort() {
       localStorage.removeItem("values-triage");
     }
 
+    // 분류 상태가 없는데 이미 2단계 이상이다 — 분류 도입 이전에 저장된 진행 상태다.
+    // 빈 분류를 새로 만들면 '이전 단계'에서 고른 카드가 0장으로 보인다. 이력에서 되살린다.
+    if (currentStep > 1) {
+      const step1 = stepHistory.find((h) => h.step === 1);
+      if (step1) {
+        setTriage(
+          triageFromLegacyProgress(
+            step1.values.map((v) => v.id),
+            Array.from(step1.selected),
+            Date.now()
+          )
+        );
+        setTriagePhase("review");
+        return;
+      }
+    }
+
     setTriage({
       round: 1,
       queueIds: buildTriageQueue(allValues),
@@ -159,7 +185,7 @@ export default function Sort() {
       history: [],
       timestamp: Date.now(),
     });
-  }, [allValues, restored, triage]);
+  }, [allValues, restored, triage, currentStep, stepHistory]);
 
   // 큐가 빈 채로 sorting 에 머무는 상태는 정상 경로로는 생기지 않는다. 그래도 저장본이
   // 어긋나면 빈 화면이 되므로 검토 화면으로 되돌린다.
@@ -222,20 +248,22 @@ export default function Sort() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /** 한 라운드가 끝났다. 게이트가 시키는 대로 간다. */
+  /** 한 라운드가 끝났다. 어느 화면으로 갈지는 `routeAfterRound` 가 정한다. */
   const applyTriageOutcome = (next: TriageState) => {
     const outcome = resolveTriageOutcome(next.decisions, next.round);
-    if (outcome.action === "proceed") {
+    const route = routeAfterRound(outcome);
+
+    if (route === "step2" && outcome.action === "proceed") {
       setTriage(next);
       proceedToStep2(outcome.valueIds);
       return;
     }
-    if (outcome.action === "rerun") {
+    if (route === "rerun") {
       setTriage(next);
       setTriagePhase("rerun");
       return;
     }
-    // 보충 화면에서 뺀 카드가 원래 있던 더미로 돌아가도록 진입 직전 상태를 남긴다.
+    // 검토 화면에서 뺀 카드가 원래 있던 더미로 돌아가도록 진입 직전 상태를 남긴다.
     setTriage({ ...next, topUpOrigin: next.decisions });
     setTriagePhase("review");
   };
@@ -260,6 +288,15 @@ export default function Sort() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  /** 재분류 화면에서 '검토 화면에서 줄이기'. 과다 상태의 안전한 기본값이다. */
+  const handleRerunReview = () => {
+    if (!triage) return;
+    setTriage({ ...triage, topUpOrigin: triage.decisions });
+    setTriagePhase("review");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // 장수가 적힌 버튼을 눌러서 나가는 길. 막지 않는다 — 다만 기본값이 아니다.
   const handleRerunDecline = () => proceedToStep2(triageYesIds);
 
   const handleTriageToggle = (id: number) => {
@@ -275,19 +312,20 @@ export default function Sort() {
   };
 
   /**
-   * 검토 화면의 출구도 정상 경로와 같은 게이트를 통과한다.
-   * 이 한 줄이 없으면 상한(24장)이 보충 경로에만 없어, 같은 장수가 경로에 따라
-   * 통과하기도 하고 막히기도 한다.
+   * 검토 화면의 확인. **하한만 지킨다.**
+   *
+   * 여기서 상한으로 되튕기면 '{n}장 그대로 2단계로 가기' 라벨이 거짓말이 된다 — 실제로는
+   * 재분류 화면으로 돌아가 두 화면이 핑퐁한다. 상한은 이미 이 화면의 문구와 버튼 라벨로
+   * 전달했고, 그것을 보고 누른 것이 이 클릭이다.
+   *
+   * 자동 진입(라운드 종료)에는 상한이 그대로 걸린다 — `routeAfterRound`.
+   * 즉 24장을 넘겨 2단계로 가는 길은 **장수가 적힌 버튼을 누르는 것뿐**이다.
+   *
+   * 유령 id 가 섞여도 어긋나지 않도록 `triageYesIds`(실재 id)를 센다.
    */
   const handleTriageConfirm = () => {
-    if (!triage) return;
-    const outcome = resolveTriageOutcome(triage.decisions, triage.round);
-    if (outcome.action === "topUp") return;
-    if (outcome.action === "rerun") {
-      setTriagePhase("rerun");
-      return;
-    }
-    proceedToStep2(outcome.valueIds);
+    if (!triage || triageYesIds.length < TRIAGE_FLOOR) return;
+    proceedToStep2(triageYesIds);
   };
 
   // 선택된 카드와 미선택 카드 분리
@@ -458,6 +496,7 @@ export default function Sort() {
               <TriageRerunPrompt
                 yesCount={triageYesIds.length}
                 message="이 카드들만 한 번 더 나눠 볼까요? 그대로 진행하셔도 괜찮습니다."
+                onReview={handleRerunReview}
                 onAccept={handleRerunAccept}
                 onDecline={handleRerunDecline}
               />

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ValueCard } from "@/components/ValueCard";
-import { TriageBucket, Value } from "@/types/values";
+import { TriageBucket, TRIAGE_CEIL, Value } from "@/types/values";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -75,6 +75,13 @@ export function CardTriage({
       const target = event.target as HTMLElement | null;
       if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
 
+      // Alt+← 는 브라우저 '뒤로가기'다(맥은 Cmd+←). 수식키를 검사하지 않으면 그것을 삼키고
+      // 대신 카드를 '아니요' 로 보낸다 — 뒤로 가려던 동작이 조용히 판단으로 바뀐다.
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+      // 키를 누르고 있으면 자동 반복이 초당 수십 장을 넘긴다. 되돌리기는 한 장씩뿐이다.
+      if (event.repeat) return;
+
       const bucket = KEY_TO_BUCKET[event.key];
       if (bucket) {
         event.preventDefault();
@@ -138,7 +145,11 @@ export function CardTriage({
             )}
           >
             <span className="block">{option.label}</span>
-            <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+            {/* 화살표는 눈으로 보는 힌트다. 읽어 주면 "아니요 왼쪽화살표"가 된다. */}
+            <span
+              aria-hidden="true"
+              className="block text-xs font-normal text-muted-foreground mt-0.5"
+            >
               {option.hint}
             </span>
           </button>
@@ -162,14 +173,20 @@ export function CardTriage({
 }
 
 /**
- * 한 라운드가 끝났는데 고른 카드가 24장을 넘었을 때.
+ * 한 라운드가 끝났는데 고른 카드가 상한을 넘었을 때.
  *
  * **권유이지 강제가 아니다.** 문구가 "나눠 볼까요?"라고 묻는 이상 거절할 수 있어야 한다.
- * 거절해도 하한(12장)은 이미 넘긴 상태이므로 2단계는 안전하다.
+ * 다만 거절이 곧 60장짜리 2단계 그리드를 뜻해서는 안 된다 — 그 과부하가 1단계를 분류로
+ * 바꾼 이유였다. 그래서 **안전한 길을 기본 버튼에 놓는다.**
+ *
+ *   ① 검토 화면에서 줄이기 — 그리드에서 눌러 빼는 가장 빠른 길 (기본)
+ *   ② 한 번 더 나누기      — 한 장씩 다시 보는 길
+ *   ③ 그대로 가기          — 열려 있다. 다만 장수를 라벨에 적어 무엇을 고르는지 보이게 한다
  */
 interface TriageRerunPromptProps {
   yesCount: number;
   message: string;
+  onReview: () => void;
   onAccept: () => void;
   onDecline: () => void;
 }
@@ -177,6 +194,7 @@ interface TriageRerunPromptProps {
 export function TriageRerunPrompt({
   yesCount,
   message,
+  onReview,
   onAccept,
   onDecline,
 }: TriageRerunPromptProps) {
@@ -186,12 +204,16 @@ export function TriageRerunPrompt({
         <p className="text-2xl font-bold text-foreground">{yesCount}장을 고르셨습니다</p>
         <p className="text-muted-foreground">{message}</p>
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button size="lg" onClick={onAccept} className="min-h-[48px]">
+      <div className="flex flex-col gap-3 items-stretch max-w-sm mx-auto">
+        <Button size="lg" onClick={onReview} className="min-h-[48px]">
+          검토 화면에서 줄이기
+        </Button>
+        <Button size="lg" variant="outline" onClick={onAccept} className="min-h-[48px]">
           한 번 더 나누기
         </Button>
-        <Button size="lg" variant="outline" onClick={onDecline} className="min-h-[48px]">
-          이대로 진행하기
+        {/* 라벨에 장수를 적는다. '이대로 진행'만으로는 무엇을 고르는지 보이지 않는다. */}
+        <Button size="lg" variant="ghost" onClick={onDecline} className="min-h-[48px]">
+          {yesCount}장 그대로 2단계로 가기
         </Button>
       </div>
     </div>
@@ -199,9 +221,10 @@ export function TriageRerunPrompt({
 }
 
 /**
- * 고른 카드 검토 화면. 두 자리에서 쓴다.
+ * 고른 카드 검토 화면. 세 자리에서 쓴다.
  *   ① 하한(12장)에 못 미쳐 보충이 필요할 때
- *   ② 2단계에서 '이전 단계'로 돌아왔을 때
+ *   ② 상한(24장)을 넘겨 줄이기를 권할 때
+ *   ③ 2단계에서 '이전 단계'로 돌아왔을 때
  *
  * 보류(글쎄요) 카드를 먼저 보여준다 — 참여자가 이미 한 번 마음이 움직였던 카드다.
  * 아니요로 보낸 카드는 접어 두고, 펼치면 카테고리별로 묶어 보여준다.
@@ -270,14 +293,14 @@ export function TriageReview({
           <p className="font-medium text-accent-foreground">
             조금만 더 골라 주세요. {need}장이면 충분합니다.
           </p>
+        ) : overCeil ? (
+          <p className="font-medium text-accent-foreground">
+            지금 {chosen.length}장이 남았습니다. {TRIAGE_CEIL}장 아래로 줄이면 다음 단계가 한결
+            수월합니다. 덜 끌리는 카드를 눌러서 빼 주세요.
+          </p>
         ) : (
           <p className="font-medium text-primary">
             {chosen.length}장을 고르셨습니다. 이대로 진행하셔도 괜찮습니다.
-          </p>
-        )}
-        {overCeil && (
-          <p className="text-sm text-muted-foreground mt-1">
-            카드가 많아지면 다음 단계가 조금 길어집니다.
           </p>
         )}
       </div>
@@ -367,13 +390,18 @@ export function TriageReview({
 
       {/* 다음 단계 */}
       <div className="flex justify-center pt-2">
+        {/*
+          과다 상태에서는 이 버튼이 기본값이 아니다. 기본 행동은 그리드에서 카드를 빼는 것이고,
+          이 버튼은 장수를 적은 채 열려 있는 출구다.
+        */}
         <Button
           size="lg"
+          variant={overCeil ? "ghost" : "default"}
           onClick={onConfirm}
           disabled={need > 0}
           className="min-h-[48px] px-8"
         >
-          다음 단계로
+          {overCeil ? `${chosen.length}장 그대로 2단계로 가기` : "다음 단계로"}
         </Button>
       </div>
     </div>

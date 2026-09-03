@@ -215,3 +215,79 @@ export function startRerun(state: TriageState, order: number[]): TriageState {
   };
 }
 
+/** 한 라운드가 끝났을 때 어느 화면으로 갈지. */
+export type TriageRoute = "step2" | "review" | "rerun";
+
+/**
+ * 게이트의 판정을 화면으로 옮긴다.
+ *
+ * `resolveTriageOutcome` 은 라운드 상한에 이르면 과다여도 `proceed` 를 낸다 — 무한 루프를
+ * 막기 위한 의도된 탈출구다. 그러나 그것을 그대로 2단계로 흘리면 60장짜리 그리드가 나온다.
+ * 1단계를 분류로 바꾼 이유가 바로 그 과부하였다.
+ *
+ * 그래서 **자동 진입에는 상한을 건다.** 막는 것이 아니라 검토 화면을 한 번 거치게 한다.
+ * 거기서 '그대로 가기'가 한 번의 클릭으로 열려 있고, 그 버튼에는 장수가 적혀 있다.
+ *
+ * 규칙: 라운드 종료 후 **자동으로** 2단계에 닿는 경우는 12~24장뿐이다.
+ */
+export function routeAfterRound(outcome: TriageOutcome): TriageRoute {
+  if (outcome.action === "rerun") return "rerun";
+  if (outcome.action === "topUp") return "review";
+  return outcome.valueIds.length > TRIAGE_CEIL ? "review" : "step2";
+}
+
+/**
+ * 저장본을 현재 카드 목록에 맞춘다.
+ *
+ * **게이트가 세는 장수와 2단계가 받는 장수는 같아야 한다.** 게이트는 `decisions` 를 세고
+ * (`resolveTriageOutcome`), 2단계 후보는 실제 카드 목록으로 다시 거른다. 저장본에 지금 없는
+ * id 가 남아 있으면 그 둘이 어긋난다 — 실재 9장 + 유령 3장이면 게이트는 12장으로 통과시키고
+ * 2단계는 9장을 받아, 정확히 10장을 요구하는 화면에서 '다음' 버튼이 영원히 뜨지 않는다.
+ *
+ * queueIds 만 거르는 것으로는 부족하다. 판단·이력·복귀지점을 모두 같은 기준으로 거른다.
+ */
+export function sanitizeTriage(state: TriageState, knownIds: number[]): TriageState {
+  const known = new Set(knownIds);
+  const keep = (record: Record<number, TriageBucket>): Record<number, TriageBucket> => {
+    const out: Record<number, TriageBucket> = {};
+    Object.keys(record).forEach((key) => {
+      const id = Number(key);
+      if (known.has(id)) out[id] = record[id];
+    });
+    return out;
+  };
+
+  return {
+    ...state,
+    queueIds: state.queueIds.filter((id) => known.has(id)),
+    decisions: keep(state.decisions),
+    history: state.history.filter((id) => known.has(id)),
+    topUpOrigin: state.topUpOrigin ? keep(state.topUpOrigin) : undefined,
+  };
+}
+
+/**
+ * 분류(Phase 40) 이전에 저장된 진행 상태를 분류 상태로 옮긴다.
+ *
+ * 구버전은 `values-progress` 를 **같은 키·같은 스키마**로 썼고 `values-triage` 는 없었다.
+ * 그대로 두면 2단계 상태만 복원되고 1단계 판단이 비어, '이전 단계'를 누르는 순간 고른 카드가
+ * 0장으로 보인다. 사용자 작업이 소리 없이 사라진다.
+ *
+ * 1단계 이력에서 '네' 더미를 되살린다.
+ *   구버전 — 72장을 펼쳐 놓고 골랐으므로 `selectedIds` 가 고른 쪽이다.
+ *   신버전 — 고른 카드만 `valueIds` 에 담고 `selectedIds` 는 비운다.
+ */
+export function triageFromLegacyProgress(
+  step1ValueIds: number[],
+  step1SelectedIds: number[],
+  timestamp: number
+): TriageState {
+  const yes = step1SelectedIds.length > 0 ? step1SelectedIds : step1ValueIds;
+  const decisions: Record<number, TriageBucket> = {};
+  yes.forEach((id) => {
+    decisions[id] = "yes";
+  });
+
+  return { round: 1, queueIds: [], decisions, history: [], timestamp };
+}
+

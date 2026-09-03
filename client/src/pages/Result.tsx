@@ -58,9 +58,7 @@ export default function Result() {
   const saveAssessment = trpc.values.save.useMutation();
 
   useEffect(() => {
-    console.log('[DEBUG] Result useEffect 실행!');
     const saved = localStorage.getItem("values-final");
-    console.log('[DEBUG] saved:', saved);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -68,15 +66,10 @@ export default function Result() {
 
         // 결과 페이지 진입 시 자동 DB 저장 (한 번만)
         const savedFlag = sessionStorage.getItem("values-saved-to-db");
-        console.log("[DEBUG] savedFlag:", savedFlag);
-        console.log("[DEBUG] parsed.length:", parsed.length);
-        console.log("[DEBUG] parsed:", parsed);
         
         if (!savedFlag) {
           const name = localStorage.getItem("user-name");
           const email = localStorage.getItem("user-email");
-          console.log("[DEBUG] name:", name);
-          console.log("[DEBUG] email:", email);
 
           if (name && email && parsed.length === 3) {
              // 커스텀 가치 확인 (localStorage에서)
@@ -84,14 +77,6 @@ export default function Result() {
             //   1단계의 73번 카드 경로는 Phase 39-C 에서 제거됐다.
             const customValue = localStorage.getItem("custom-value-result") ?? undefined;
             
-            console.log("[DEBUG] DB 저장 시도", {
-              name,
-              email,
-              value1: parsed[0].korean,
-              value2: parsed[1].korean,
-              value3: parsed[2].korean,
-              customValue,
-            });
             // 중복 저장 방지를 위해 mutation 호출 직후 즉시 플래그 설정
             sessionStorage.setItem("values-saved-to-db", "true");
             saveAssessment.mutate({
@@ -103,7 +88,7 @@ export default function Result() {
               customValue,
             }, {
               onSuccess: () => {
-                console.log("결과가 자동으로 저장되었습니다.");
+                // 조용히 끝낸다. 참여자에게 알리지 않는 자동 저장이다.
               },
               onError: (error) => {
                 console.error("저장 실패:", error);
@@ -111,11 +96,7 @@ export default function Result() {
                 sessionStorage.removeItem("values-saved-to-db");
               },
             });
-          } else {
-            console.log("[DEBUG] DB 저장 조건 불충족");
           }
-        } else {
-          console.log("[DEBUG] 이미 저장됨");
         }
       } catch (e) {
         console.error("Failed to parse final values:", e);
@@ -134,21 +115,12 @@ export default function Result() {
     const email = localStorage.getItem("user-email");
     
     if (!name || !email || valuesToSave.length !== 3) {
-      console.log("[DEBUG] DB 저장 조건 불충족");
       return Promise.resolve();
     }
 
     // 결과 화면에서 교체한 경우에만 값이 있다(§7.2).
     const customValue = localStorage.getItem("custom-value-result") ?? undefined;
 
-    console.log("[DEBUG] DB 저장 시도", {
-      name,
-      email,
-      value1: valuesToSave[0].korean,
-      value2: valuesToSave[1].korean,
-      value3: valuesToSave[2].korean,
-      customValue,
-    });
 
     return new Promise<void>((resolve, reject) => {
       saveAssessment.mutate({
@@ -160,7 +132,6 @@ export default function Result() {
         customValue,
       }, {
         onSuccess: () => {
-          console.log("결과가 저장되었습니다.");
           sessionStorage.setItem("values-saved-to-db", "true");
           resolve();
         },
@@ -386,11 +357,16 @@ export default function Result() {
                 <span>💡</span>
                 <span>이 결과를 어떻게 활용하나요?</span>
               </h3>
+              {/*
+                v1 에 있던 '실천'과 '공유'가 v2 에서 빠져 있었다(§5.3). 그룹코칭 도구에서
+                '공유'의 누락은 치명적이다. 다섯으로 되돌린다.
+              */}
               <ul className="space-y-2 text-sm text-foreground/80">
-                <li>• <strong>워크북 기록</strong>: 각 가치에 대한 성찰 질문에 답하며 깊이 있게 탐구하세요.</li>
-                <li>• <strong>코칭 세션</strong>: 코치와 함께 이 가치들이 삶의 결정에 어떻게 영향을 미치는지 논의하세요.</li>
-                <li>• <strong>목표 설정</strong>: 이 가치들을 중심으로 인생 목표와 우선순위를 재정립하세요.</li>
-                <li>• <strong>정기적 점검</strong>: 6개월마다 이 진단을 다시 해보며 가치의 변화를 확인하세요.</li>
+                <li>• <strong>성찰하기</strong>: 각 가치의 성찰 질문에 답하며 워크북에 기록하세요.</li>
+                <li>• <strong>실천하기</strong>: 이번 주의 결정 하나를 이 가치에 비추어 다시 내려보세요.</li>
+                <li>• <strong>공유하기</strong>: 코칭 세션이나 그룹에서 세 가치와 그 이유를 나누세요.</li>
+                <li>• <strong>방향잡기</strong>: 이 가치를 기준으로 인생 목표와 우선순위를 재정립하세요.</li>
+                <li>• <strong>재검토하기</strong>: 6개월 뒤 다시 진단하여 가치의 변화를 확인하세요.</li>
               </ul>
             </CardContent>
           </Card>
@@ -473,18 +449,19 @@ export default function Result() {
             </Button>
 
             {/*
-              인쇄 버튼은 768px 이상에서만 보인다(D-7). 모바일 브라우저의 인쇄는 메뉴로
-              들어가는 편이라 버튼이 오히려 혼란스럽다. 그래도 메뉴 경로로 인쇄할 때
-              성찰 질문이 펼쳐지는 것은 CSS 가 보장한다.
+              `window.print()` 는 iOS Safari 와 카카오톡 인앱 브라우저에서 제한된다. 참여자
+              다수가 휴대폰으로 접속하므로 사실상 데스크톱 전용이다(C-5). 은닉은 JS 폭 판정이
+              아니라 미디어 쿼리로 한다 — 폭으로 판정하면 초기 렌더에서 버튼이 나타났다
+              사라진다(D-7). `.print-action` 규칙은 인쇄용 CSS 와 같은 블록에 있다.
             */}
             <Button
               size="lg"
               variant="outline"
               onClick={() => window.print()}
-              className="gap-2 hidden md:inline-flex"
+              className="gap-2 print-action"
             >
               <Printer className="w-5 h-5" />
-              인쇄하기
+              인쇄 · PDF로 저장
             </Button>
 
             <Button
@@ -528,6 +505,11 @@ export default function Result() {
               다시 시작
             </Button>
           </div>
+
+          {/* 인쇄가 막힌 휴대폰에서는 '복사하기'가 주 동선이다(C-5). */}
+          <p className="text-sm text-muted-foreground text-center md:hidden no-print">
+            결과를 복사해 메모장이나 메시지에 붙여 두세요.
+          </p>
         </div>
       </div>
 

@@ -34,13 +34,12 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        console.log('[SERVER] values.save mutation 호출됨:', input);
+        // input 을 찍지 않는다 — 이름·이메일·가치 3개가 그대로 들어 있다(docs/04 §4.3).
         try {
-          const result = await saveValuesAssessment(input);
-          console.log('[SERVER] DB 저장 성공:', result);
+          await saveValuesAssessment(input);
           return { success: true };
         } catch (error) {
-          console.error('[SERVER] DB 저장 실패:', error);
+          console.error('[SERVER] 결과 저장 실패:', error);
           throw error;
         }
       }),

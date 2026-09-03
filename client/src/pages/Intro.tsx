@@ -7,6 +7,14 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
+/**
+ * 삭제 문의처(§6.1 C안 필수 항목).
+ *
+ * 이 도구는 세미나에서 진행자가 함께 있는 상태로 쓰인다. 지금 참인 경로는 진행자다.
+ * 담당 부서 연락처가 정해지면 이 한 줄만 바꾼다 — 화면 여러 곳에 흩지 않는다.
+ */
+const PRIVACY_DELETION_CONTACT = "삭제를 원하시면 진행자에게 말씀해 주세요.";
+
 export default function Intro() {
   const [, setLocation] = useLocation();
   const [name, setName] = useState("");
@@ -95,11 +103,17 @@ export default function Intro() {
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                 <Target className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle className="text-lg">4단계 여정</CardTitle>
+              {/*
+                "4단계 여정"은 과정을 감췄다. 끝이 보여야 첫 단계의 부담이 준다(§5.4).
+                사다리를 그대로 보여주고, 첫 단계가 '고르기'가 아니라 '나누기'임을 밝힌다.
+              */}
+              <CardTitle className="text-base leading-relaxed">
+                72장 → 끌리는 것만 → 10개 → 5개 → 3개
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                72개에서 시작해 단계별로 좁혀가며, 진짜 나를 만나는 여정입니다.
+                첫 단계는 고르는 게 아니라 나누는 일입니다. 3분이면 됩니다.
               </CardDescription>
             </CardContent>
           </Card>
@@ -173,6 +187,23 @@ export default function Intro() {
                   />
                 </div>
               </div>
+              {/*
+                §6.1 C안 — 수집은 그대로 두되 안내를 붙인다. 원문이 요구한 세 가지를
+                모두 적는다: 수집 목적 · 보관 기간 · 삭제 문의처.
+
+                보관 기간을 '삭제를 요청하실 때까지'로 적은 것은 사실 그대로다. 자동 삭제
+                로직이 없고 운영자가 지울 때까지 행이 남는다. 지키지 못할 기간을 적는 것보다
+                지금 참인 문장을 적는다.
+              */}
+              <div className="rounded-lg bg-muted/50 px-4 py-3 text-xs text-muted-foreground space-y-1">
+                <p className="font-medium text-foreground/80">개인정보 수집 안내</p>
+                <p>
+                  진단 결과를 저장하고 본인이 다시 조회할 수 있도록 이름과 이메일을 받습니다.
+                  세미나 진행자가 운영을 위해 결과를 확인합니다.
+                </p>
+                <p>삭제를 요청하실 때까지 보관합니다. {PRIVACY_DELETION_CONTACT}</p>
+              </div>
+
               <Button
                 size="lg"
                 onClick={handleStart}
